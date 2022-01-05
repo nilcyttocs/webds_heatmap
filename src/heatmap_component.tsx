@@ -12,6 +12,14 @@ const REPORT_RAW = 19;
 
 let eventSource: EventSource|undefined = undefined;
 let eventData: number[][]|undefined = undefined;
+let eventError: boolean = false;
+
+const errorHandler = (error: any) => {
+  eventError = true;
+  console.error(
+    `Error on GET /webds/report\n${error}`
+  );
+}
 
 const eventHandler = (event: any) => {
   let report = JSON.parse(event.data);
@@ -26,8 +34,10 @@ const removeEvent = () => {
 }
 
 const addEvent = () => {
+  eventError = false;
   eventSource = new window.EventSource('/webds/report');
   eventSource.addEventListener('report', eventHandler, false);
+  eventSource.addEventListener('error', errorHandler, false);
 }
 
 const setReport = async (disable: number[], enable: number[]) => {
@@ -108,6 +118,10 @@ const HeatmapPlot = (props: any): JSX.Element => {
   }
 
   const animatePlot = () => {
+    if (eventError) {
+      props.resetReportType();
+      return;
+    }
     computePlot();
     if (heat === undefined) {
       requestID = requestAnimationFrame(animatePlot);
@@ -139,9 +153,9 @@ const HeatmapPlot = (props: any): JSX.Element => {
   }
 
   const startAnimation = () => {
+    t0 = Date.now();
     frameCount = 0;
     eventData = undefined;
-    t0 = Date.now();
     reportType = props.reportType;
     requestID = requestAnimationFrame(animatePlot);
   }
@@ -152,6 +166,8 @@ const HeatmapPlot = (props: any): JSX.Element => {
       setReport([REPORT_TOUCH, REPORT_RAW], [REPORT_DELTA]);
     } else if (props.reportType === 'Raw Image') {
       setReport([REPORT_TOUCH, REPORT_DELTA], [REPORT_RAW]);
+    } else {
+      return;
     }
     await requestAPI<any>('command?query=app-info')
     .then(data => {

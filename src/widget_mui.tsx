@@ -10,7 +10,11 @@ import HeatmapPlot from './heatmap_component';
 import webdsTheme from './webdsTheme';
 
 export const HeatmapMui = (props:any): JSX.Element => {
-  const [reportType, setReportType] = useState<string>('Delta Image');
+  const [reportType, setReportType] = useState<string>('');
+
+  const resetReportType = () => {
+    setReportType('');
+  };
 
   return (
     <ThemeProvider theme={webdsTheme}>
@@ -39,7 +43,7 @@ export const HeatmapMui = (props:any): JSX.Element => {
               Raw
             </Button>
           </Stack>
-          <HeatmapPlot reportType={reportType}/>
+          <HeatmapPlot reportType={reportType} resetReportType={resetReportType}/>
         </Stack>
       </div>
     </ThemeProvider>

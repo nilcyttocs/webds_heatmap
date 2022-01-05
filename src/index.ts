@@ -31,7 +31,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
     commands.addCommand(command, {
       label: 'Heatmap',
       caption: 'Heatmap',
-      icon: (args: { [x: string]: any }) => {
+      icon: (args: {[x: string]: any}) => {
         return args['isLauncher'] ? heatmapIcon : undefined;
       },
       execute: () => {
