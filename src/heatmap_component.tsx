@@ -111,7 +111,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
     });
     maxZ = Math.max.apply(null, maxRow);
     maxZ = Math.ceil(maxZ / 10) * 10;
-    if (maxZ > 50 && maxZ < 200) {
+    if (maxZ > 50 && maxZ < 150) {
       minZ = -20;
       maxZ = 100;
     }
