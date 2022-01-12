@@ -5,14 +5,14 @@ import { HeatmapMui } from './widget_mui';
 
 const HeatmapContainer = (props:any): JSX.Element => {
   return (
-    <HeatmapMui />
+    <HeatmapMui/>
   );
 };
 
 export class HeatmapWidget extends ReactWidget {
   render(): JSX.Element {
     return (
-      <div>
+      <div className='jp-webdsHeatmap-container'>
         <HeatmapContainer/>
       </div>
     );

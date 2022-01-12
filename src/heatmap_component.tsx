@@ -75,6 +75,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
 
   let heat: number[][]|undefined;
   let minZ: number;
+  let midZ: number;
   let maxZ: number;
   let t0: number;
   let t1: number;
@@ -105,16 +106,11 @@ const HeatmapPlot = (props: any): JSX.Element => {
       return Math.min.apply(Math, row);
     });
     minZ = Math.min.apply(null, minRow);
-    minZ = Math.floor(minZ / 10) * 10;
     let maxRow = heat!.map((row: number[]) => {
       return Math.max.apply(Math, row);
     });
     maxZ = Math.max.apply(null, maxRow);
-    maxZ = Math.ceil(maxZ / 10) * 10;
-    if (maxZ > 50 && maxZ < 150) {
-      minZ = -20;
-      maxZ = 100;
-    }
+    midZ = (minZ + maxZ) / 2;
   }
 
   const animatePlot = () => {
@@ -131,9 +127,13 @@ const HeatmapPlot = (props: any): JSX.Element => {
       [{
         z: heat,
         type: 'heatmap',
-        colorscale: 'Viridis',
         showscale: true,
-        colorbar: {tickformat: ">+04d", nticks: 3},
+        colorscale: 'Viridis',
+        colorbar: {
+          tickformat: '+05d',
+          tickmode: 'array',
+          tickvals: [minZ, midZ, maxZ],
+        },
         zmin: minZ,
         zmax: maxZ
       }]
@@ -199,10 +199,9 @@ const HeatmapPlot = (props: any): JSX.Element => {
           onInitialized={(figure) => storeState(figure)}
           onUpdate={(figure) => storeState(figure)}
         />
-        ) : (
-          null
-        )
-      }
+      ) : (
+        null
+      )}
     </div>
   );
 }

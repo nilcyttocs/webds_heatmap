@@ -18,7 +18,7 @@ export const HeatmapMui = (props:any): JSX.Element => {
 
   return (
     <ThemeProvider theme={webdsTheme}>
-      <div className='jp-webdsHeatmapWidget'>
+      <div>
         <Stack
           spacing={5}
           divider={<Divider orientation='horizontal' sx={{width:475}}/>}
