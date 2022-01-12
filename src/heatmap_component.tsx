@@ -75,7 +75,6 @@ const HeatmapPlot = (props: any): JSX.Element => {
 
   let heat: number[][]|undefined;
   let minZ: number;
-  let midZ: number;
   let maxZ: number;
   let t0: number;
   let t1: number;
@@ -110,7 +109,6 @@ const HeatmapPlot = (props: any): JSX.Element => {
       return Math.max.apply(Math, row);
     });
     maxZ = Math.max.apply(null, maxRow);
-    midZ = (minZ + maxZ) / 2;
   }
 
   const animatePlot = () => {
@@ -130,9 +128,9 @@ const HeatmapPlot = (props: any): JSX.Element => {
         showscale: true,
         colorscale: 'Viridis',
         colorbar: {
-          tickformat: '+05d',
+          tickformat: '+04d',
           tickmode: 'array',
-          tickvals: [minZ, midZ, maxZ],
+          tickvals: [minZ, maxZ]
         },
         zmin: minZ,
         zmax: maxZ
