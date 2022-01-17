@@ -29,8 +29,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
     const {commands, shell} = app;
     const command: string = 'webds_heatmap:open';
     commands.addCommand(command, {
-      label: 'Heatmap',
-      caption: 'Heatmap',
+      label: 'ADC Data',
+      caption: 'ADC Data',
       icon: (args: {[x: string]: any}) => {
         return args['isLauncher'] ? heatmapIcon : undefined;
       },
@@ -39,7 +39,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
           const content = new HeatmapWidget();
           widget = new MainAreaWidget<HeatmapWidget>({content});
           widget.id = 'webds_heatmap_widget';
-          widget.title.label = 'Heatmap';
+          widget.title.label = 'ADC Data';
           widget.title.icon = heatmapIcon;
           widget.title.closable = true;
         }
