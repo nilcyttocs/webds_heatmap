@@ -1,19 +1,41 @@
 import React, { useState } from 'react';
 
+import Fab from '@mui/material/Fab';
 import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
+import Select from '@mui/material/Select';
 import Divider from '@mui/material/Divider';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
 import { ThemeProvider } from '@mui/material/styles';
+
+import StopIcon from '@mui/icons-material/Stop';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 import HeatmapPlot from './heatmap_component';
 
 import webdsTheme from './webdsTheme';
 
-export const HeatmapMui = (props:any): JSX.Element => {
+const reportTypes = [
+  'Delta Image',
+  'Raw Image'
+];
+
+export const HeatmapMui = (props: any): JSX.Element => {
   const [reportType, setReportType] = useState<string>('');
+  const [run, setRun] = useState<boolean>(false);
 
   const resetReportType = () => {
     setReportType('');
+    setRun(false);
+  };
+
+  const changeReportType = (event: any) => {
+    if (reportType !== event.target.value) {
+      setReportType(event.target.value);
+      if (event.target.value) {
+        setRun(true);
+      }
+    }
   };
 
   return (
@@ -21,29 +43,64 @@ export const HeatmapMui = (props:any): JSX.Element => {
       <div>
         <Stack
           spacing={5}
-          divider={<Divider orientation='horizontal' sx={{width:475}}/>}
-          sx={{marginLeft:5, marginTop:5}}
+          divider={<Divider orientation='horizontal' sx={{width: 475}}/>}
+          sx={{marginLeft: 5, marginTop: 5}}
         >
+          <HeatmapPlot
+            numCols={props.numCols}
+            numRows={props.numRows}
+            reportType={reportType}
+            run={run}
+            resetReportType={resetReportType}/>
           <Stack
-            spacing={2}
-            direction="row"
+            spacing={7}
+            direction='row'
+            sx={{height: 70}}
           >
-            <Button
-              variant="contained"
-              onClick={() => {setReportType('Delta Image');}}
-              sx={{minWidth:100, maxWidth:100, marginRight:2}}
-            >
-              Delta
-            </Button>
-            <Button
-              variant="contained"
-              onClick={() => {setReportType('Raw Image');}}
-              sx={{minWidth:100, maxWidth:100, marginRight:2}}
-            >
-              Raw
-            </Button>
+            <FormControl
+              size='small'
+              sx={{width: 180, marginLeft: 3}}>
+              <Select
+                displayEmpty
+                value={reportType}
+                onChange={changeReportType}
+                renderValue={(selected: any) => {
+                  if (selected.length === 0) {
+                    return <div style={{color: 'grey'}}><em>Report Type</em></div>;
+                  }
+                  return selected;
+                }}
+              >
+                {reportTypes.map((reportType) => (
+                  <MenuItem
+                    key={reportType}
+                    value={reportType}
+                  >
+                    {reportType}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            {run === false ? (
+              <Fab
+                color='primary'
+                size='small'
+                disabled={!reportType}
+                onClick={() => {setRun(true);}}
+              >
+                <PlayArrowIcon/>
+              </Fab>
+            ) : (
+              <Fab
+                color='primary'
+                size='small'
+                disabled={!reportType}
+                onClick={() => {setRun(false);}}
+              >
+                <StopIcon/>
+              </Fab>
+            )}
           </Stack>
-          <HeatmapPlot reportType={reportType} resetReportType={resetReportType}/>
         </Stack>
       </div>
     </ThemeProvider>

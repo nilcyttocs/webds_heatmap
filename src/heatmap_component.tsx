@@ -10,9 +10,13 @@ const REPORT_TOUCH = 17;
 const REPORT_DELTA = 18;
 const REPORT_RAW = 19;
 
+const PLOT_SCALE = 20;
+
+let run = false;
+
 let eventSource: EventSource|undefined = undefined;
 let eventData: number[][]|undefined = undefined;
-let eventError: boolean = false;
+let eventError = false;
 
 const errorHandler = (error: any) => {
   eventError = true;
@@ -56,22 +60,19 @@ const setReport = async (disable: number[], enable: number[]) => {
 }
 
 const HeatmapPlot = (props: any): JSX.Element => {
-  const l = 30;
-  const t = 40;
-  const plotConfig = {displayModeBar: false};
-
-  const [running, setRunning] = useState<boolean>(false);
+  const [show, setShow] = useState<boolean>(false);
   const [data, setData] = useState<any>([]);
+  const [config, setConfig] = useState<any>({});
   const [layout, setLayout] = useState<any>({});
   const [frames, setFrames] = useState<any>([]);
-  const [config, setConfig] = useState<any>({});
 
-  const storeState = (figure: any) => {
-    setData(figure.data);
-    setLayout(figure.layout);
-    setFrames(figure.frames);
-    setConfig(figure.config);
-  }
+  const l = 30;
+  const t = 40;
+  const b = 20;
+  const width = props.numCols * PLOT_SCALE + l;
+  const height = props.numRows * PLOT_SCALE + t;
+
+  const plotConfig = {displayModeBar: false};
 
   let heat: number[][]|undefined;
   let minZ: number;
@@ -80,23 +81,27 @@ const HeatmapPlot = (props: any): JSX.Element => {
   let t1: number;
   let frameCount: number;
   let requestID: number|undefined;
-  let reportType: string|undefined;
+
+  const storeState = (figure: any) => {
+    setData(figure.data);
+    setLayout(figure.layout);
+    setFrames(figure.frames);
+    setConfig(figure.config);
+  }
 
   const stopAnimation = () => {
-    setRunning(false);
     if (requestID) {
       cancelAnimationFrame(requestID);
       requestID = undefined;
-      reportType = undefined;
     }
   }
 
-  const stopPlot = async () => {
+  const stopPlot = () => {
     stopAnimation();
     removeEvent();
   }
 
-  const computePlot = async () => {
+  const computePlot = () => {
     heat = eventData;
     if (heat === undefined) {
       return;
@@ -116,11 +121,23 @@ const HeatmapPlot = (props: any): JSX.Element => {
       props.resetReportType();
       return;
     }
+    if (!run) {
+      requestID = requestAnimationFrame(animatePlot);
+      return;
+    }
     computePlot();
     if (heat === undefined) {
       requestID = requestAnimationFrame(animatePlot);
       return;
     }
+    setLayout(
+      {
+        width,
+        height,
+        title: props.reportType,
+        margin: {l, t, b}
+      }
+    );
     setData(
       [{
         z: heat,
@@ -144,51 +161,43 @@ const HeatmapPlot = (props: any): JSX.Element => {
       console.log(`Heatmap FPS = ${fps}`);
       frameCount = 0;
     }
-    if (reportType === props.reportType) {
-      setRunning(true);
-      requestID = requestAnimationFrame(animatePlot);
-    }
+    setShow(true);
+    requestID = requestAnimationFrame(animatePlot);
   }
 
   const startAnimation = () => {
     t0 = Date.now();
     frameCount = 0;
     eventData = undefined;
-    reportType = props.reportType;
     requestID = requestAnimationFrame(animatePlot);
   }
 
-  const runPlot = async () => {
+  const newPlot = () => {
     stopAnimation();
     if (props.reportType === 'Delta Image') {
       setReport([REPORT_TOUCH, REPORT_RAW], [REPORT_DELTA]);
     } else if (props.reportType === 'Raw Image') {
       setReport([REPORT_TOUCH, REPORT_DELTA], [REPORT_RAW]);
     } else {
+      setShow(false);
       return;
     }
-    await requestAPI<any>('command?query=app-info')
-    .then(data => {
-      let width = data.numCols * 25 + l;
-      let height = data.numRows * 25 + t;
-      setLayout({width, height, title: props.reportType, margin: {l, t}});
-      setConfig(plotConfig);
-      startAnimation();
-    }).catch(reason => {
-      console.error(
-        `Error on GET /webds/command?query=app-info\n${reason}`
-      );
-    });
+    setConfig(plotConfig);
+    startAnimation();
   }
 
   useEffect(() => {
-    runPlot();
+    newPlot();
     return () => {stopPlot();}
   }, [props.reportType]);
 
+  useEffect(() => {
+    run = props.run;
+  }, [props.run]);
+
   return (
-    <div>
-      {running ? (
+    <div style={{height: height, display: 'flex', alignItems: 'center'}}>
+      {show ? (
         <Plot
           data={data}
           layout={layout}
@@ -198,7 +207,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
           onUpdate={(figure) => storeState(figure)}
         />
       ) : (
-        null
+        <div style={{paddingLeft: 30, fontSize: 18}}>Please select report type</div>
       )}
     </div>
   );

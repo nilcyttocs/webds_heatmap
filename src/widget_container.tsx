@@ -1,11 +1,36 @@
 import { ReactWidget } from '@jupyterlab/apputils';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 import { HeatmapMui } from './widget_mui';
 
-const HeatmapContainer = (props:any): JSX.Element => {
+import { requestAPI } from './handler';
+
+const HeatmapContainer = (props: any): JSX.Element => {
+  const [dimensions, setDimensions] = useState<any>([]);
+
+  const getDeviceInfo = async () => {
+    await requestAPI<any>('command?query=app-info')
+    .then(data => {
+      setDimensions([data.numCols, data.numRows]);
+    }).catch(reason => {
+      console.error(
+        `Error on GET /webds/command?query=app-info\n${reason}`
+      );
+    });
+  }
+
+  useEffect(() => {
+    getDeviceInfo();
+  }, []);
+
   return (
-    <HeatmapMui/>
+    <div>
+      {dimensions.length ? (
+        <HeatmapMui numCols={dimensions[0]} numRows={dimensions[1]}/>
+      ) : (
+        null
+      )}
+    </div>
   );
 };
 
