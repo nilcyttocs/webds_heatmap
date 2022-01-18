@@ -44,7 +44,8 @@ const addEvent = () => {
   eventSource.addEventListener('error', errorHandler, false);
 }
 
-const setReport = async (disable: number[], enable: number[]) => {
+const setReport = async (disable: number[], enable: number[]): Promise<void> => {
+  let status = false;
   removeEvent();
   const dataToSend = {enable, disable};
   await requestAPI<any>('report', {
@@ -52,11 +53,13 @@ const setReport = async (disable: number[], enable: number[]) => {
     method: 'POST'
   }).then(() => {
     addEvent();
+    status = true;
   }).catch(reason => {
     console.error(
       `Error on POST /webds/report\n${reason}`
     );
   });
+  return status ? Promise.resolve() : Promise.reject();
 }
 
 const HeatmapPlot = (props: any): JSX.Element => {
@@ -172,14 +175,20 @@ const HeatmapPlot = (props: any): JSX.Element => {
     requestID = requestAnimationFrame(animatePlot);
   }
 
-  const newPlot = () => {
+  const newPlot = async () => {
     stopAnimation();
-    if (props.reportType === 'Delta Image') {
-      setReport([REPORT_TOUCH, REPORT_RAW], [REPORT_DELTA]);
-    } else if (props.reportType === 'Raw Image') {
-      setReport([REPORT_TOUCH, REPORT_DELTA], [REPORT_RAW]);
-    } else {
+    if (!props.reportType) {
       setShow(false);
+      return;
+    }
+    try {
+      if (props.reportType === 'Delta Image') {
+        await setReport([REPORT_TOUCH, REPORT_RAW], [REPORT_DELTA]);
+      } else if (props.reportType === 'Raw Image') {
+        await setReport([REPORT_TOUCH, REPORT_DELTA], [REPORT_RAW]);
+      }
+    } catch {
+      props.resetReportType();
       return;
     }
     setConfig(plotConfig);
