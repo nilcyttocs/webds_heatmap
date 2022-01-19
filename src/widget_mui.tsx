@@ -55,32 +55,38 @@ export const HeatmapMui = (props: any): JSX.Element => {
           <Stack
             spacing={7}
             direction='row'
-            sx={{height: 70}}
+            sx={{paddingLeft: 3, height: 70}}
           >
-            <FormControl
-              size='small'
-              sx={{width: 180, marginLeft: 3}}>
-              <Select
-                displayEmpty
-                value={reportType}
-                onChange={changeReportType}
-                renderValue={(selected: any) => {
-                  if (selected.length === 0) {
-                    return <div style={{color: 'grey'}}><em>Report Type</em></div>;
-                  }
-                  return selected;
-                }}
-              >
-                {reportTypes.map((reportType) => (
-                  <MenuItem
-                    key={reportType}
-                    value={reportType}
-                  >
-                    {reportType}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+            <Stack
+              spacing={1}
+              direction='row'
+            >
+              <div style={{paddingTop: 8, fontSize: 18}}>Report Type</div>
+              <FormControl
+                size='small'
+                sx={{width: 180}}>
+                <Select
+                  displayEmpty
+                  value={reportType}
+                  onChange={changeReportType}
+                  renderValue={(selected: any) => {
+                    if (selected.length === 0) {
+                      return <div style={{color: 'grey'}}><em>Please Select</em></div>;
+                    }
+                    return selected;
+                  }}
+                >
+                  {reportTypes.map((reportType) => (
+                    <MenuItem
+                      key={reportType}
+                      value={reportType}
+                    >
+                      {reportType}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Stack>
             {run === false ? (
               <Fab
                 color='primary'

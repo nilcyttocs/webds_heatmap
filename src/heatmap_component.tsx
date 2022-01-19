@@ -192,7 +192,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
         title: {
           font: {
             family: 'Arial',
-            size: 18
+            size: 20
           },
           text: props.reportType
         }
@@ -222,7 +222,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
           onUpdate={(figure) => storeState(figure)}
         />
       ) : (
-        <div style={{paddingLeft: 30, fontSize: 18}}>Please select report type</div>
+        <div style={{paddingLeft: 50, fontSize: 18}}>Please select report type</div>
       )}
     </div>
   );
