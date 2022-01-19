@@ -133,14 +133,6 @@ const HeatmapPlot = (props: any): JSX.Element => {
       requestID = requestAnimationFrame(animatePlot);
       return;
     }
-    setLayout(
-      {
-        width,
-        height,
-        title: props.reportType,
-        margin: {l, t, b}
-      }
-    );
     setData(
       [{
         z: heat,
@@ -192,6 +184,20 @@ const HeatmapPlot = (props: any): JSX.Element => {
       return;
     }
     setConfig(plotConfig);
+    setLayout(
+      {
+        width,
+        height,
+        margin: {l, t, b},
+        title: {
+          font: {
+            family: 'Arial',
+            size: 18
+          },
+          text: props.reportType
+        }
+      }
+    );
     startAnimation();
   }
 
