@@ -140,7 +140,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
         showscale: true,
         colorscale: 'Viridis',
         colorbar: {
-          tickformat: '+04d',
+          tickformat: '+05d',
           tickmode: 'array',
           tickvals: [minZ, maxZ]
         },
