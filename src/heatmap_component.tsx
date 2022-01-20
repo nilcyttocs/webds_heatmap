@@ -222,7 +222,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
           onUpdate={(figure) => storeState(figure)}
         />
       ) : (
-        <div style={{paddingLeft: 50, fontSize: 18}}>Please select report type</div>
+        <div style={{paddingLeft: 100, fontSize: 18}}>Please select report type</div>
       )}
     </div>
   );
