@@ -21,8 +21,8 @@ const reportTypes = [
 ];
 
 export const HeatmapMui = (props: any): JSX.Element => {
-  const [reportType, setReportType] = useState<string>('');
   const [run, setRun] = useState<boolean>(false);
+  const [reportType, setReportType] = useState<string>('');
 
   const resetReportType = () => {
     setReportType('');
@@ -43,35 +43,41 @@ export const HeatmapMui = (props: any): JSX.Element => {
       <div>
         <Stack
           spacing={5}
-          divider={<Divider orientation='horizontal' sx={{width: 475}}/>}
-          sx={{marginLeft: 5, marginTop: 5}}
+          divider={<Divider orientation='horizontal' sx={{width: '500px'}}/>}
+          sx={{marginLeft: '50px', marginTop: '50px'}}
         >
           <HeatmapPlot
+            run={run}
             numCols={props.numCols}
             numRows={props.numRows}
             reportType={reportType}
-            run={run}
             resetReportType={resetReportType}/>
           <Stack
             spacing={7}
             direction='row'
-            sx={{paddingLeft: 3, height: 70}}
+            sx={{height: '70px'}}
           >
             <Stack
               spacing={1}
               direction='row'
             >
-              <div style={{paddingTop: 8, fontSize: 18}}>Report Type</div>
+              <div style={{paddingTop: '8px', fontSize: '18px'}}>
+                Report Type
+              </div>
               <FormControl
                 size='small'
-                sx={{width: 180}}>
+                sx={{width: '180px'}}>
                 <Select
                   displayEmpty
                   value={reportType}
                   onChange={changeReportType}
                   renderValue={(selected: any) => {
                     if (selected.length === 0) {
-                      return <div style={{color: 'grey'}}><em>Please Select</em></div>;
+                      return (
+                        <div style={{color: 'grey'}}>
+                          <em>Please Select</em>
+                        </div>
+                      );
                     }
                     return selected;
                   }}

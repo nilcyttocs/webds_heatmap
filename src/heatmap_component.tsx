@@ -10,12 +10,11 @@ const REPORT_TOUCH = 17;
 const REPORT_DELTA = 18;
 const REPORT_RAW = 19;
 
-const PLOT_SCALE = 20;
-
 let run = false;
+let reportType = '';
 
 let eventSource: EventSource|undefined = undefined;
-let eventData: number[][]|undefined = undefined;
+let eventData: any = undefined;
 let eventError = false;
 
 const errorHandler = (error: any) => {
@@ -26,8 +25,11 @@ const errorHandler = (error: any) => {
 }
 
 const eventHandler = (event: any) => {
-  let report = JSON.parse(event.data);
-  eventData = report.image;
+  let data = JSON.parse(event.data);
+  if ((reportType === 'Delta Image' && data.report[0] === 'delta') ||
+      (reportType === 'Raw Image' && data.report[0] === 'raw')) {
+    eventData = data.report[1];
+  }
 }
 
 const removeEvent = () => {
@@ -69,11 +71,12 @@ const HeatmapPlot = (props: any): JSX.Element => {
   const [layout, setLayout] = useState<any>({});
   const [frames, setFrames] = useState<any>([]);
 
-  const l = 30;
-  const t = 40;
-  const b = 20;
-  const width = props.numCols * PLOT_SCALE + l;
-  const height = props.numRows * PLOT_SCALE + t;
+  const l = 0;
+  const r = 120;
+  const t = 0;
+  const b = 0;
+  const height = 400;
+  const width = Math.floor(height * props.numCols / props.numRows) + r;
 
   const plotConfig = {displayModeBar: false};
 
@@ -105,7 +108,11 @@ const HeatmapPlot = (props: any): JSX.Element => {
   }
 
   const computePlot = () => {
-    heat = eventData;
+    if (eventData === undefined) {
+      heat = undefined;
+      return;
+    }
+    heat = eventData.image;
     if (heat === undefined) {
       return;
     }
@@ -136,16 +143,16 @@ const HeatmapPlot = (props: any): JSX.Element => {
     setData(
       [{
         z: heat,
+        zmin: minZ,
+        zmax: maxZ,
         type: 'heatmap',
         showscale: true,
         colorscale: 'Viridis',
         colorbar: {
-          tickformat: '+05d',
+          tickformat: '<-d',
           tickmode: 'array',
           tickvals: [minZ, maxZ]
-        },
-        zmin: minZ,
-        zmax: maxZ
+        }
       }]
     );
     frameCount++;
@@ -168,6 +175,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
   }
 
   const newPlot = async () => {
+    reportType = props.reportType;
     stopAnimation();
     if (!props.reportType) {
       setShow(false);
@@ -188,13 +196,12 @@ const HeatmapPlot = (props: any): JSX.Element => {
       {
         width,
         height,
-        margin: {l, t, b},
-        title: {
-          font: {
-            family: 'Arial',
-            size: 20
-          },
-          text: props.reportType
+        margin: {l, r, t, b},
+        xaxis: {
+          showticklabels: false
+        },
+        yaxis: {
+          showticklabels: false
         }
       }
     );
@@ -211,18 +218,25 @@ const HeatmapPlot = (props: any): JSX.Element => {
   }, [props.run]);
 
   return (
-    <div style={{height: height, display: 'flex', alignItems: 'center'}}>
+    <div style={{height: (height + 50) + 'px', display: 'flex', alignItems: 'center'}}>
       {show ? (
-        <Plot
-          data={data}
-          layout={layout}
-          frames={frames}
-          config={config}
-          onInitialized={(figure) => storeState(figure)}
-          onUpdate={(figure) => storeState(figure)}
-        />
+        <div>
+          <div style={{width: (width - r) + 'px', height: '50px', fontSize: '20px', textAlign: 'center'}}>
+            {props.reportType}
+          </div>
+          <Plot
+            data={data}
+            layout={layout}
+            frames={frames}
+            config={config}
+            onInitialized={(figure) => storeState(figure)}
+            onUpdate={(figure) => storeState(figure)}
+          />
+        </div>
       ) : (
-        <div style={{paddingLeft: 100, fontSize: 18}}>Please select report type</div>
+        <div style={{paddingLeft: '50px', fontSize: '18px'}}>
+          Please select report type
+        </div>
       )}
     </div>
   );
