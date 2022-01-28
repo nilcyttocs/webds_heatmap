@@ -17,7 +17,8 @@ import webdsTheme from './webdsTheme';
 
 const reportTypes = [
   'Delta Image',
-  'Raw Image'
+  'Raw Image',
+  'Baseline Image'
 ];
 
 export const HeatmapMui = (props: any): JSX.Element => {

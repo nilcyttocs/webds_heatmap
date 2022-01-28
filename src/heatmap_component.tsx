@@ -9,6 +9,7 @@ const SSE_CLOSED = 2
 const REPORT_TOUCH = 17;
 const REPORT_DELTA = 18;
 const REPORT_RAW = 19;
+const REPORT_BASELINE = 20;
 
 let run = false;
 let reportType = '';
@@ -27,7 +28,8 @@ const errorHandler = (error: any) => {
 const eventHandler = (event: any) => {
   const data = JSON.parse(event.data);
   if ((reportType === 'Delta Image' && data.report[0] === 'delta') ||
-      (reportType === 'Raw Image' && data.report[0] === 'raw')) {
+      (reportType === 'Raw Image' && data.report[0] === 'raw') ||
+      (reportType === 'Baseline Image' && data.report[0] === 'baseline')) {
     eventData = data.report[1];
   } else {
     eventData = undefined;
@@ -199,9 +201,11 @@ const HeatmapPlot = (props: any): JSX.Element => {
     );
     try {
       if (reportType === 'Delta Image') {
-        await setReport([REPORT_TOUCH, REPORT_RAW], [REPORT_DELTA]);
+        await setReport([REPORT_TOUCH, REPORT_RAW, REPORT_BASELINE], [REPORT_DELTA]);
       } else if (reportType === 'Raw Image') {
-        await setReport([REPORT_TOUCH, REPORT_DELTA], [REPORT_RAW]);
+        await setReport([REPORT_TOUCH, REPORT_DELTA, REPORT_BASELINE], [REPORT_RAW]);
+      } else if (reportType === 'Baseline Image') {
+        await setReport([REPORT_TOUCH, REPORT_DELTA, REPORT_RAW], [REPORT_BASELINE]);
       }
     } catch {
       props.resetReportType();
