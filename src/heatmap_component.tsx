@@ -22,29 +22,31 @@ const errorHandler = (error: any) => {
   console.error(
     `Error on GET /webds/report\n${error}`
   );
-}
+};
 
 const eventHandler = (event: any) => {
-  let data = JSON.parse(event.data);
+  const data = JSON.parse(event.data);
   if ((reportType === 'Delta Image' && data.report[0] === 'delta') ||
       (reportType === 'Raw Image' && data.report[0] === 'raw')) {
     eventData = data.report[1];
+  } else {
+    eventData = undefined;
   }
-}
+};
 
 const removeEvent = () => {
   if (eventSource && eventSource.readyState != SSE_CLOSED) {
     eventSource.removeEventListener('report', eventHandler, false);
     eventSource.close();
   }
-}
+};
 
 const addEvent = () => {
   eventError = false;
   eventSource = new window.EventSource('/webds/report');
   eventSource.addEventListener('report', eventHandler, false);
   eventSource.addEventListener('error', errorHandler, false);
-}
+};
 
 const setReport = async (disable: number[], enable: number[]): Promise<void> => {
   let status = false;
@@ -62,7 +64,7 @@ const setReport = async (disable: number[], enable: number[]): Promise<void> => 
     );
   });
   return status ? Promise.resolve() : Promise.reject();
-}
+};
 
 const HeatmapPlot = (props: any): JSX.Element => {
   const [show, setShow] = useState<boolean>(false);
@@ -93,19 +95,19 @@ const HeatmapPlot = (props: any): JSX.Element => {
     setLayout(figure.layout);
     setFrames(figure.frames);
     setConfig(figure.config);
-  }
+  };
 
   const stopAnimation = () => {
     if (requestID) {
       cancelAnimationFrame(requestID);
       requestID = undefined;
     }
-  }
+  };
 
   const stopPlot = () => {
     stopAnimation();
     removeEvent();
-  }
+  };
 
   const computePlot = () => {
     if (eventData === undefined) {
@@ -116,15 +118,15 @@ const HeatmapPlot = (props: any): JSX.Element => {
     if (heat === undefined) {
       return;
     }
-    let minRow = heat!.map((row: number[]) => {
+    const minRow = heat!.map((row: number[]) => {
       return Math.min.apply(Math, row);
     });
     minZ = Math.min.apply(null, minRow);
-    let maxRow = heat!.map((row: number[]) => {
+    const maxRow = heat!.map((row: number[]) => {
       return Math.max.apply(Math, row);
     });
     maxZ = Math.max.apply(null, maxRow);
-  }
+  };
 
   const animatePlot = () => {
     if (eventError) {
@@ -165,30 +167,20 @@ const HeatmapPlot = (props: any): JSX.Element => {
     }
     setShow(true);
     requestID = requestAnimationFrame(animatePlot);
-  }
+  };
 
   const startAnimation = () => {
     t0 = Date.now();
     frameCount = 0;
     eventData = undefined;
     requestID = requestAnimationFrame(animatePlot);
-  }
+  };
 
   const newPlot = async () => {
     reportType = props.reportType;
     stopAnimation();
-    if (!props.reportType) {
+    if (!reportType) {
       setShow(false);
-      return;
-    }
-    try {
-      if (props.reportType === 'Delta Image') {
-        await setReport([REPORT_TOUCH, REPORT_RAW], [REPORT_DELTA]);
-      } else if (props.reportType === 'Raw Image') {
-        await setReport([REPORT_TOUCH, REPORT_DELTA], [REPORT_RAW]);
-      }
-    } catch {
-      props.resetReportType();
       return;
     }
     setConfig(plotConfig);
@@ -205,8 +197,18 @@ const HeatmapPlot = (props: any): JSX.Element => {
         }
       }
     );
+    try {
+      if (reportType === 'Delta Image') {
+        await setReport([REPORT_TOUCH, REPORT_RAW], [REPORT_DELTA]);
+      } else if (reportType === 'Raw Image') {
+        await setReport([REPORT_TOUCH, REPORT_DELTA], [REPORT_RAW]);
+      }
+    } catch {
+      props.resetReportType();
+      return;
+    }
     startAnimation();
-  }
+  };
 
   useEffect(() => {
     newPlot();
@@ -222,7 +224,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
       {show ? (
         <div>
           <div style={{width: (width - r) + 'px', height: '50px', fontSize: '20px', textAlign: 'center'}}>
-            {props.reportType}
+            {reportType}
           </div>
           <Plot
             data={data}
@@ -240,6 +242,6 @@ const HeatmapPlot = (props: any): JSX.Element => {
       )}
     </div>
   );
-}
+};
 
 export default HeatmapPlot;

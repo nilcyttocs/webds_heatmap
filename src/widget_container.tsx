@@ -21,7 +21,7 @@ const HeatmapContainer = (props: any): JSX.Element => {
         `Error on GET /webds/command?query=app-info\n${reason}`
       );
     });
-  }
+  };
 
   useEffect(() => {
     getDeviceInfo();
@@ -48,4 +48,4 @@ export class HeatmapWidget extends ReactWidget {
       </div>
     );
   }
-}
+};
