@@ -67,7 +67,7 @@ export const HeatmapMui = (props: any): JSX.Element => {
               </div>
               <FormControl
                 size='small'
-                sx={{width: '180px'}}>
+                sx={{minWidth: '180px', maxWidth: '180px'}}>
                 <Select
                   displayEmpty
                   value={reportType}
