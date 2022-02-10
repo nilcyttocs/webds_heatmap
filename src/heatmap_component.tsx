@@ -18,6 +18,25 @@ let eventSource: EventSource|undefined = undefined;
 let eventData: any = undefined;
 let eventError = false;
 
+let statistics: string;
+let samples: number;
+let index: number;
+let filled: boolean;
+let imgBuffer: any[];
+let subBuffer: any[] | undefined;
+
+const imgBufferSize = 1000;
+
+const updateSubBuffer = () => {
+  const end = index;
+  const start = index - samples;
+  if (start < 0) {
+    subBuffer = [...imgBuffer.slice(start), ...imgBuffer.slice(0, end)];
+  } else {
+    subBuffer = imgBuffer.slice(start, end);
+  }
+};
+
 const errorHandler = (error: any) => {
   eventError = true;
   console.error(
@@ -33,6 +52,27 @@ const eventHandler = (event: any) => {
     eventData = data.report[1];
   } else {
     eventData = undefined;
+    return;
+  }
+
+  if ((eventData.image === undefined) || (imgBuffer === undefined)) {
+    return;
+  }
+
+  index = (index + 1) % imgBufferSize;
+  imgBuffer[index] = eventData.image;
+
+  if (!filled) {
+    if (index + 1 >= samples) {
+      updateSubBuffer();
+    } else {
+      subBuffer = undefined;
+    }
+    if (index + 1 === imgBufferSize) {
+      filled = true;
+    }
+  } else {
+    updateSubBuffer();
   }
 };
 
@@ -111,23 +151,84 @@ const HeatmapPlot = (props: any): JSX.Element => {
     removeEvent();
   };
 
+  const getMean = () => {
+    if (subBuffer === undefined) {
+      heat = undefined;
+      return;
+    }
+    heat = subBuffer.reduce(function(mean, cur) {
+      for (let i = 0; i < props.numRows; i++) {
+        for (let j = 0; j < props.numCols; j++) {
+          mean[i][j] += cur[i][j] / samples;
+        }
+      }
+      return mean;
+    }, [...Array(props.numRows)].map(e => Array(props.numCols).fill(0)));
+  };
+
+  const getMax = () => {
+    if (subBuffer === undefined) {
+      heat = undefined;
+      return;
+    }
+    heat = subBuffer.reduce(function(max, cur) {
+      for (let i = 0; i < props.numRows; i++) {
+        for (let j = 0; j < props.numCols; j++) {
+          max[i][j] = cur[i][j] > max[i][j] ? cur[i][j] : max[i][j];
+        }
+      }
+      return max;
+    }, [...Array(props.numRows)].map(e => Array(props.numCols).fill(-Infinity)));
+  };
+
+  const getMin = () => {
+    if (subBuffer === undefined) {
+      heat = undefined;
+      return;
+    }
+    heat = subBuffer.reduce(function(min, cur) {
+      for (let i = 0; i < props.numRows; i++) {
+        for (let j = 0; j < props.numCols; j++) {
+          min[i][j] = cur[i][j] < min[i][j] ? cur[i][j] : min[i][j];
+        }
+      }
+      return min;
+    }, [...Array(props.numRows)].map(e => Array(props.numCols).fill(Infinity)));
+  };
+
   const computePlot = () => {
     if (eventData === undefined) {
       heat = undefined;
       return;
     }
-    heat = eventData.image;
+    switch (statistics) {
+      case 'Single':
+        heat = imgBuffer[index];
+        break;
+      case 'Mean':
+        getMean();
+        break;
+      case 'Max' :
+        getMax();
+        break;
+      case 'Min' :
+        getMin();
+        break;
+      default:
+        heat = undefined;
+        break;
+    }
     if (heat === undefined) {
       return;
     }
     const minRow = heat!.map((row: number[]) => {
       return Math.min.apply(Math, row);
     });
-    minZ = Math.min.apply(null, minRow);
+    minZ = Math.min.apply(Math, minRow);
     const maxRow = heat!.map((row: number[]) => {
       return Math.max.apply(Math, row);
     });
-    maxZ = Math.max.apply(null, maxRow);
+    maxZ = Math.max.apply(Math, maxRow);
   };
 
   const animatePlot = () => {
@@ -175,6 +276,10 @@ const HeatmapPlot = (props: any): JSX.Element => {
     t0 = Date.now();
     frameCount = 0;
     eventData = undefined;
+    index = imgBufferSize - 1;
+    filled = false;
+    imgBuffer = new Array(imgBufferSize);
+    subBuffer = undefined;
     requestID = requestAnimationFrame(animatePlot);
   };
 
@@ -218,6 +323,14 @@ const HeatmapPlot = (props: any): JSX.Element => {
     newPlot();
     return () => {stopPlot();}
   }, [props.reportType]);
+
+  useEffect(() => {
+    statistics = props.statistics;
+  }, [props.statistics]);
+
+  useEffect(() => {
+    samples = props.samples;
+  }, [props.samples]);
 
   useEffect(() => {
     run = props.run;
