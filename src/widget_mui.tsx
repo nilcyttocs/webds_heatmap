@@ -44,6 +44,7 @@ export const HeatmapMui = (props: any): JSX.Element => {
   const resetReportType = () => {
     setReportType('');
     setStatistics('Single');
+    setSamples(10);
     setRun(false);
   };
 
@@ -51,6 +52,7 @@ export const HeatmapMui = (props: any): JSX.Element => {
     if (reportType !== event.target.value) {
       setReportType(event.target.value);
       setStatistics('Single');
+      setSamples(10);
       if (event.target.value) {
         setRun(true);
       }
