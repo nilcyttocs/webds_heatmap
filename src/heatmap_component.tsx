@@ -156,14 +156,18 @@ const HeatmapPlot = (props: any): JSX.Element => {
       heat = undefined;
       return;
     }
-    heat = subBuffer.reduce(function(mean, cur) {
-      for (let i = 0; i < props.numRows; i++) {
-        for (let j = 0; j < props.numCols; j++) {
-          mean[i][j] += cur[i][j] / samples;
+    try {
+      heat = subBuffer.reduce(function(mean, cur) {
+        for (let i = 0; i < props.numRows; i++) {
+          for (let j = 0; j < props.numCols; j++) {
+            mean[i][j] += cur[i][j] / samples;
+          }
         }
-      }
-      return mean;
-    }, [...Array(props.numRows)].map(e => Array(props.numCols).fill(0)));
+        return mean;
+      }, [...Array(props.numRows)].map(e => Array(props.numCols).fill(0)));
+    } catch {
+      heat = undefined;
+    }
   };
 
   const getMax = () => {
@@ -171,14 +175,18 @@ const HeatmapPlot = (props: any): JSX.Element => {
       heat = undefined;
       return;
     }
-    heat = subBuffer.reduce(function(max, cur) {
-      for (let i = 0; i < props.numRows; i++) {
-        for (let j = 0; j < props.numCols; j++) {
-          max[i][j] = cur[i][j] > max[i][j] ? cur[i][j] : max[i][j];
+    try {
+      heat = subBuffer.reduce(function(max, cur) {
+        for (let i = 0; i < props.numRows; i++) {
+          for (let j = 0; j < props.numCols; j++) {
+            max[i][j] = cur[i][j] > max[i][j] ? cur[i][j] : max[i][j];
+          }
         }
-      }
-      return max;
-    }, [...Array(props.numRows)].map(e => Array(props.numCols).fill(-Infinity)));
+        return max;
+      }, [...Array(props.numRows)].map(e => Array(props.numCols).fill(-Infinity)));
+    } catch {
+      heat = undefined;
+    }
   };
 
   const getMin = () => {
@@ -186,14 +194,18 @@ const HeatmapPlot = (props: any): JSX.Element => {
       heat = undefined;
       return;
     }
-    heat = subBuffer.reduce(function(min, cur) {
-      for (let i = 0; i < props.numRows; i++) {
-        for (let j = 0; j < props.numCols; j++) {
-          min[i][j] = cur[i][j] < min[i][j] ? cur[i][j] : min[i][j];
+    try {
+      heat = subBuffer.reduce(function(min, cur) {
+        for (let i = 0; i < props.numRows; i++) {
+          for (let j = 0; j < props.numCols; j++) {
+            min[i][j] = cur[i][j] < min[i][j] ? cur[i][j] : min[i][j];
+          }
         }
-      }
-      return min;
-    }, [...Array(props.numRows)].map(e => Array(props.numCols).fill(Infinity)));
+        return min;
+      }, [...Array(props.numRows)].map(e => Array(props.numCols).fill(Infinity)));
+    } catch {
+      heat = undefined;
+    }
   };
 
   const computePlot = () => {
