@@ -22,7 +22,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
   id: '@webds/heatmap:plugin',
   autoStart: true,
   requires: [ILauncher, ILayoutRestorer],
-  activate: async (app: JupyterFrontEnd, launcher: ILauncher, restorer: ILayoutRestorer) => {
+  activate: (app: JupyterFrontEnd, launcher: ILauncher, restorer: ILayoutRestorer) => {
     console.log('JupyterLab extension @webds/heatmap is activated!');
 
     let widget: MainAreaWidget;
