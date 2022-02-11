@@ -25,7 +25,8 @@ const statisticsList = [
   'Single',
   'Mean',
   'Max',
-  'Min'
+  'Min',
+  'Range'
 ];
 
 const samplesList = [

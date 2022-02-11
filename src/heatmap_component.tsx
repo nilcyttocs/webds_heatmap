@@ -208,6 +208,40 @@ const HeatmapPlot = (props: any): JSX.Element => {
     }
   };
 
+  const getRange = () => {
+    if (subBuffer === undefined) {
+      heat = undefined;
+      return;
+    }
+    try {
+      const max: number[][] = subBuffer.reduce(function(max, cur) {
+        for (let i = 0; i < props.numRows; i++) {
+          for (let j = 0; j < props.numCols; j++) {
+            max[i][j] = cur[i][j] > max[i][j] ? cur[i][j] : max[i][j];
+          }
+        }
+        return max;
+      }, [...Array(props.numRows)].map(e => Array(props.numCols).fill(-Infinity)));
+
+      const min: number[][] = subBuffer.reduce(function(min, cur) {
+        for (let i = 0; i < props.numRows; i++) {
+          for (let j = 0; j < props.numCols; j++) {
+            min[i][j] = cur[i][j] < min[i][j] ? cur[i][j] : min[i][j];
+          }
+        }
+        return min;
+      }, [...Array(props.numRows)].map(e => Array(props.numCols).fill(Infinity)));
+
+      heat = max.map(function(rArray, rIndex) {
+        return rArray.map(function(maxElement, cIndex) {
+          return maxElement - min[rIndex][cIndex];
+        });
+      });
+    } catch {
+      heat = undefined;
+    }
+  };
+
   const computePlot = () => {
     if (eventData === undefined) {
       heat = undefined;
@@ -225,6 +259,9 @@ const HeatmapPlot = (props: any): JSX.Element => {
         break;
       case 'Min' :
         getMin();
+        break;
+      case 'Range':
+        getRange();
         break;
       default:
         heat = undefined;
