@@ -11,6 +11,8 @@ const REPORT_DELTA = 18;
 const REPORT_RAW = 19;
 const REPORT_BASELINE = 20;
 
+const FPS = 120;
+
 let run = false;
 let reportType = '';
 
@@ -93,7 +95,7 @@ const addEvent = () => {
 const setReport = async (disable: number[], enable: number[]): Promise<void> => {
   let status = false;
   removeEvent();
-  const dataToSend = {enable, disable};
+  const dataToSend = {enable, disable, fps: FPS};
   await requestAPI<any>('report', {
     body: JSON.stringify(dataToSend),
     method: 'POST'
