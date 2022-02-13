@@ -24,18 +24,37 @@ let statistics: string;
 let samples: number;
 let index: number;
 let filled: boolean;
-let imgBuffer: any[];
-let subBuffer: any[] | undefined;
 
-const imgBufferSize = 1000;
+type ReportBuffer = {
+  image: number[][][];
+  hybridx: number[][];
+  hybridy: number[][];
+};
+
+const bufferSize = 1000;
+let buffer: ReportBuffer;
+let subBuffer: ReportBuffer|undefined;
+
+let t00: number;
+let t11: number;
+let fps: number;
+let eventCount: number;
 
 const updateSubBuffer = () => {
   const end = index;
   const start = index - samples;
   if (start < 0) {
-    subBuffer = [...imgBuffer.slice(start), ...imgBuffer.slice(0, end)];
+    subBuffer = {
+      image: [...buffer.image.slice(start), ...buffer.image.slice(0, end)],
+      hybridx: [...buffer.hybridx.slice(start), ...buffer.hybridx.slice(0, end)],
+      hybridy: [...buffer.hybridy.slice(start), ...buffer.hybridy.slice(0, end)]
+    };
   } else {
-    subBuffer = imgBuffer.slice(start, end);
+    subBuffer = {
+      image: buffer.image.slice(start, end),
+      hybridx: buffer.hybridx.slice(start, end),
+      hybridy: buffer.hybridy.slice(start, end)
+    };
   }
 };
 
@@ -57,12 +76,22 @@ const eventHandler = (event: any) => {
     return;
   }
 
-  if ((eventData.image === undefined) || (imgBuffer === undefined)) {
+  if ((eventData.image === undefined) || (buffer === undefined)) {
     return;
   }
 
-  index = (index + 1) % imgBufferSize;
-  imgBuffer[index] = eventData.image;
+  eventCount++;
+  t11 = Date.now();
+  if (t11 - t00 >= 1000) {
+    t00 = t11;
+    fps = eventCount;
+    eventCount = 0;
+  }
+
+  index = (index + 1) % bufferSize;
+  buffer.image[index] = eventData.image;
+  buffer.hybridx[index] = eventData.hybridx;
+  buffer.hybridy[index] = eventData.hybridy;
 
   if (!filled) {
     if (index + 1 >= samples) {
@@ -70,7 +99,7 @@ const eventHandler = (event: any) => {
     } else {
       subBuffer = undefined;
     }
-    if (index + 1 === imgBufferSize) {
+    if (index + 1 === bufferSize) {
       filled = true;
     }
   } else {
@@ -131,7 +160,6 @@ const HeatmapPlot = (props: any): JSX.Element => {
   let maxZ: number;
   let t0: number;
   let t1: number;
-  let frameCount: number;
   let requestID: number|undefined;
 
   const storeState = (figure: any) => {
@@ -159,7 +187,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
       return;
     }
     try {
-      heat = subBuffer.reduce(function(mean, cur) {
+      heat = subBuffer.image.reduce(function(mean, cur) {
         for (let i = 0; i < props.numRows; i++) {
           for (let j = 0; j < props.numCols; j++) {
             mean[i][j] += cur[i][j] / samples;
@@ -178,7 +206,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
       return;
     }
     try {
-      heat = subBuffer.reduce(function(max, cur) {
+      heat = subBuffer.image.reduce(function(max, cur) {
         for (let i = 0; i < props.numRows; i++) {
           for (let j = 0; j < props.numCols; j++) {
             max[i][j] = cur[i][j] > max[i][j] ? cur[i][j] : max[i][j];
@@ -197,7 +225,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
       return;
     }
     try {
-      heat = subBuffer.reduce(function(min, cur) {
+      heat = subBuffer.image.reduce(function(min, cur) {
         for (let i = 0; i < props.numRows; i++) {
           for (let j = 0; j < props.numCols; j++) {
             min[i][j] = cur[i][j] < min[i][j] ? cur[i][j] : min[i][j];
@@ -216,7 +244,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
       return;
     }
     try {
-      const max: number[][] = subBuffer.reduce(function(max, cur) {
+      const max: number[][] = subBuffer.image.reduce(function(max, cur) {
         for (let i = 0; i < props.numRows; i++) {
           for (let j = 0; j < props.numCols; j++) {
             max[i][j] = cur[i][j] > max[i][j] ? cur[i][j] : max[i][j];
@@ -225,7 +253,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
         return max;
       }, [...Array(props.numRows)].map(e => Array(props.numCols).fill(-Infinity)));
 
-      const min: number[][] = subBuffer.reduce(function(min, cur) {
+      const min: number[][] = subBuffer.image.reduce(function(min, cur) {
         for (let i = 0; i < props.numRows; i++) {
           for (let j = 0; j < props.numCols; j++) {
             min[i][j] = cur[i][j] < min[i][j] ? cur[i][j] : min[i][j];
@@ -251,7 +279,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
     }
     switch (statistics) {
       case 'Single':
-        heat = imgBuffer[index];
+        heat = buffer.image[index];
         break;
       case 'Mean':
         getMean();
@@ -311,13 +339,10 @@ const HeatmapPlot = (props: any): JSX.Element => {
         }
       }]
     );
-    frameCount++;
     t1 = Date.now();
-    if (t1 - t0 >= 3000) {
+    if (t1 - t0 >= 1000) {
       t0 = t1;
-      const fps = Math.floor(frameCount / 3);
-      console.log(`Heatmap FPS = ${fps}`);
-      frameCount = 0;
+      props.updateSampleRate(fps);
     }
     setShow(true);
     requestID = requestAnimationFrame(animatePlot);
@@ -325,11 +350,16 @@ const HeatmapPlot = (props: any): JSX.Element => {
 
   const startAnimation = () => {
     t0 = Date.now();
-    frameCount = 0;
+    t00 = Date.now();
+    eventCount = 0;
     eventData = undefined;
-    index = imgBufferSize - 1;
+    index = bufferSize - 1;
     filled = false;
-    imgBuffer = new Array(imgBufferSize);
+    buffer = {
+      image: new Array(bufferSize),
+      hybridx: new Array(bufferSize),
+      hybridy: new Array(bufferSize),
+    };
     subBuffer = undefined;
     requestID = requestAnimationFrame(animatePlot);
   };
