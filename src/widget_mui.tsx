@@ -16,6 +16,8 @@ import HeatmapPlot from './heatmap_component';
 
 import webdsTheme from './webdsTheme';
 
+const dividerWidth = 95 + 8 + 180 + 56 + 69 + 8 + 180 + 56 + 40;
+
 const reportTypeList = [
   'Delta Image',
   'Raw Image',
@@ -80,7 +82,7 @@ export const HeatmapMui = (props: any): JSX.Element => {
       <div>
         <Stack
           spacing={5}
-          divider={<Divider orientation='horizontal' sx={{width: '692px'}}/>}
+          divider={<Divider orientation='horizontal' sx={{width: dividerWidth + 'px'}}/>}
           sx={{marginLeft: '50px', marginTop: '50px'}}
         >
           <HeatmapPlot
