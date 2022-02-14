@@ -11,6 +11,11 @@ const REPORT_DELTA = 18;
 const REPORT_RAW = 19;
 const REPORT_BASELINE = 20;
 
+const HEAT_PLOT_HEIGHT = 350;
+const BARX_PLOT_HEIGHT = 70;
+const BARY_PLOT_HEIGHT = HEAT_PLOT_HEIGHT;
+const BARY_PLOT_WIDTH = BARX_PLOT_HEIGHT;
+
 const FPS = 120;
 
 let run = false;
@@ -135,32 +140,80 @@ const setReport = async (disable: number[], enable: number[]): Promise<void> => 
 
 const HeatmapPlot = (props: any): JSX.Element => {
   const [show, setShow] = useState<boolean>(false);
-  const [data, setData] = useState<any>([]);
-  const [config, setConfig] = useState<any>({});
-  const [layout, setLayout] = useState<any>({});
-  const [frames, setFrames] = useState<any>([]);
 
-  const l = 0;
-  const r = 120;
-  const t = 0;
-  const b = 0;
-  const height = 400;
-  const width = Math.floor(height * props.numCols / props.numRows) + r;
+  const [heatData, setHeatData] = useState<any>([]);
+  const [heatConfig, setHeatConfig] = useState<any>({});
+  const [heatLayout, setHeatLayout] = useState<any>({});
+  const [heatFrames, setHeatFrames] = useState<any>([]);
+
+  const [barXData, setBarXData] = useState<any>([]);
+  const [barXConfig, setBarXConfig] = useState<any>({});
+  const [barXLayout, setBarXLayout] = useState<any>({});
+  const [barXFrames, setBarXFrames] = useState<any>([]);
+
+  const [barYData, setBarYData] = useState<any>([]);
+  const [barYConfig, setBarYConfig] = useState<any>({});
+  const [barYLayout, setBarYLayout] = useState<any>({});
+  const [barYFrames, setBarYFrames] = useState<any>([]);
+
+  const barYLMargin = 20;
+  const barYRMargin = 20;
+  const barYTMargin = 20;
+  const barYBMargin = 20;
+  const barYHeight = BARY_PLOT_HEIGHT + barYTMargin + barYBMargin;
+  const barYWidth = BARY_PLOT_WIDTH + barYLMargin + barYRMargin;
+
+  const heatLMargin = 10;
+  const heatRMargin = 120;
+  const heatTMargin = barYTMargin;
+  const heatBMargin = barYBMargin;
+  const heatHeight = HEAT_PLOT_HEIGHT + heatTMargin + heatBMargin;
+  const heatWidth = Math.floor(HEAT_PLOT_HEIGHT * props.numCols / props.numRows) + heatLMargin + heatRMargin;
+
+  const barXLMargin = barYWidth + heatLMargin;
+  const barXRMargin = 10;
+  const barXTMargin = 10;
+  const barXBMargin = 10;
+  const barXHeight = BARX_PLOT_HEIGHT + barXTMargin + barXBMargin;
+  const barXWidth = Math.floor(HEAT_PLOT_HEIGHT * props.numCols / props.numRows) + barXLMargin + barXRMargin;
 
   const plotConfig = {displayModeBar: false};
 
-  let heat: number[][]|undefined;
-  let minZ: number;
-  let maxZ: number;
+  let heatZ: number[][]|undefined;
+  let heatZMin: number;
+  let heatZMax: number;
+
+  let barX: number[]|undefined;
+  let barXMin: number|undefined;
+  let barXMax: number|undefined;
+
+  let barY: number[]|undefined;
+  let barYMin: number|undefined;
+  let barYMax: number|undefined;
+
   let t0: number;
   let t1: number;
   let requestID: number|undefined;
 
-  const storeState = (figure: any) => {
-    setData(figure.data);
-    setLayout(figure.layout);
-    setFrames(figure.frames);
-    setConfig(figure.config);
+  const storeHeatState = (figure: any) => {
+    setHeatData(figure.data);
+    setHeatConfig(figure.config);
+    setHeatLayout(figure.layout);
+    setHeatFrames(figure.frames);
+  };
+
+  const storeBarXState = (figure: any) => {
+    setBarXData(figure.data);
+    setBarXConfig(figure.config);
+    setBarXLayout(figure.layout);
+    setBarXFrames(figure.frames);
+  };
+
+  const storeBarYState = (figure: any) => {
+    setBarYData(figure.data);
+    setBarYConfig(figure.config);
+    setBarYLayout(figure.layout);
+    setBarYFrames(figure.frames);
   };
 
   const stopAnimation = () => {
@@ -296,9 +349,12 @@ const HeatmapPlot = (props: any): JSX.Element => {
 
   const computePlot = () => {
     if (eventData === undefined) {
-      heat = undefined;
+      heatZ = undefined;
+      barX = undefined;
+      barY = undefined;
       return;
     }
+
     let result: Report|undefined;
     switch (statistics) {
       case 'Single':
@@ -321,19 +377,50 @@ const HeatmapPlot = (props: any): JSX.Element => {
         break;
     }
     if (result === undefined) {
-      heat = undefined;
+      heatZ = undefined;
+      barX = undefined;
+      barY = undefined;
       return;
     } else {
-      heat = result.image;
+      heatZ = result.image;
+      barX = result.hybridx;
+      barY = result.hybridy;
     }
-    const minRow = heat!.map((row: number[]) => {
+
+    const minRow = heatZ!.map((row: number[]) => {
       return Math.min.apply(Math, row);
     });
-    minZ = Math.min.apply(Math, minRow);
-    const maxRow = heat!.map((row: number[]) => {
+    heatZMin = Math.min.apply(Math, minRow);
+    const maxRow = heatZ!.map((row: number[]) => {
       return Math.max.apply(Math, row);
     });
-    maxZ = Math.max.apply(Math, maxRow);
+    heatZMax = Math.max.apply(Math, maxRow);
+
+    const minBarX = Math.min.apply(Math, barX);
+    const maxBarX = Math.max.apply(Math, barX);
+    if (barXMin === undefined) {
+      barXMin = minBarX;
+    } else {
+      barXMin = minBarX < barXMin ? minBarX : barXMin;
+    }
+    if (barXMax === undefined) {
+      barXMax = maxBarX;
+    } else {
+      barXMax = maxBarX > barXMax ? maxBarX : barXMax;
+    }
+
+    const minBarY = Math.min.apply(Math, barY);
+    const maxBarY = Math.max.apply(Math, barY);
+    if (barYMin === undefined) {
+      barYMin = minBarY;
+    } else {
+      barYMin = minBarY < barYMin ? minBarY : barYMin;
+    }
+    if (barYMax === undefined) {
+      barYMax = maxBarY;
+    } else {
+      barYMax = maxBarY > barYMax ? maxBarY : barYMax;
+    }
   };
 
   const animatePlot = () => {
@@ -346,23 +433,102 @@ const HeatmapPlot = (props: any): JSX.Element => {
       return;
     }
     computePlot();
-    if (heat === undefined) {
+    if (heatZ === undefined || barX === undefined || barY === undefined) {
       requestID = requestAnimationFrame(animatePlot);
       return;
     }
-    setData(
+    setHeatData(
       [{
-        z: heat,
-        zmin: minZ,
-        zmax: maxZ,
+        z: heatZ,
+        zmin: heatZMin,
+        zmax: heatZMax,
         type: 'heatmap',
         showscale: true,
         colorscale: 'Viridis',
         colorbar: {
           tickformat: '<-d',
           tickmode: 'array',
-          tickvals: [minZ, maxZ]
+          tickvals: [heatZMin, heatZMax]
         }
+      }]
+    );
+    setBarXLayout(
+      {
+        width: barXWidth,
+        height: barXHeight,
+        margin: {
+          l: barXLMargin,
+          r: barXRMargin,
+          t: barXTMargin,
+          b: barXBMargin
+        },
+        xaxis: {
+          mirror: true,
+          showline: true,
+          showgrid: false,
+          ticks: '',
+          tickformat: '>-d',
+          tickmode: 'array',
+          tickvals: []
+        },
+        yaxis: {
+          mirror: true,
+          showline: true,
+          showgrid: false,
+          ticks: '',
+          tickformat: '>-d',
+          tickmode: 'array',
+          tickvals: [barXMin, barXMax],
+          range: [barXMin, barXMax],
+          zerolinecolor: '#969696'
+        }
+      }
+    );
+    setBarXData(
+      [{
+        y: barX,
+        type: 'bar',
+        width: 0.5
+      }]
+    );
+    setBarYLayout(
+      {
+        width: barYWidth,
+        height: barYHeight,
+        margin: {
+          l: barYLMargin,
+          r: barYRMargin,
+          t: barYTMargin,
+          b: barYBMargin
+        },
+        xaxis: {
+          side: 'top',
+          mirror: true,
+          showline: true,
+          showgrid: false,
+          ticks: '',
+          tickformat: '>-d',
+          tickmode: 'array',
+          tickvals: [barYMin, barYMax],
+          range: [barYMin, barYMax],
+          zerolinecolor: '#969696'
+        },
+        yaxis: {
+          mirror: true,
+          showline: true,
+          showgrid: false,
+          ticks: '',
+          tickformat: '>-d',
+          tickmode: 'array',
+          tickvals: []
+        }
+      }
+    );
+    setBarYData(
+      [{
+        x: barY,
+        type: 'bar',
+        width: 0.5
       }]
     );
     t1 = Date.now();
@@ -377,6 +543,10 @@ const HeatmapPlot = (props: any): JSX.Element => {
   const startAnimation = () => {
     t0 = Date.now();
     t00 = Date.now();
+    barXMin = undefined;
+    barXMax = undefined;
+    barYMin = undefined;
+    barYMax = undefined;
     eventCount = 0;
     eventData = undefined;
     index = bufferSize - 1;
@@ -393,20 +563,29 @@ const HeatmapPlot = (props: any): JSX.Element => {
       setShow(false);
       return;
     }
-    setConfig(plotConfig);
-    setLayout(
+    setHeatConfig(plotConfig);
+    setHeatLayout(
       {
-        width,
-        height,
-        margin: {l, r, t, b},
+        width: heatWidth,
+        height: heatHeight,
+        margin: {
+          l: heatLMargin,
+          r: heatRMargin,
+          t: heatTMargin,
+          b: heatBMargin
+        },
         xaxis: {
+          ticks: '',
           showticklabels: false
         },
         yaxis: {
+          ticks: '',
           showticklabels: false
         }
       }
     );
+    setBarXConfig(plotConfig);
+    setBarYConfig(plotConfig);
     try {
       if (reportType === 'Delta Image') {
         await setReport([REPORT_TOUCH, REPORT_RAW, REPORT_BASELINE], [REPORT_DELTA]);
@@ -440,19 +619,37 @@ const HeatmapPlot = (props: any): JSX.Element => {
   }, [props.run]);
 
   return (
-    <div style={{height: (height + 50) + 'px', display: 'flex', alignItems: 'center'}}>
+    <div style={{height: (50 + heatHeight + barXHeight) + 'px', display: 'flex', alignItems: 'center'}}>
       {show ? (
         <div>
-          <div style={{width: (width - r) + 'px', height: '50px', fontSize: '20px', textAlign: 'center'}}>
+          <div style={{width: (heatWidth) + 'px', height: '50px', fontSize: '20px', textAlign: 'center'}}>
             {reportType}
           </div>
+          <div style={{display: 'flex', flexWrap: 'nowrap'}}>
+            <Plot
+              data={barYData}
+              config={barYConfig}
+              layout={barYLayout}
+              frames={barYFrames}
+              onInitialized={(figure) => storeBarYState(figure)}
+              onUpdate={(figure) => storeBarYState(figure)}
+            />
+            <Plot
+              data={heatData}
+              config={heatConfig}
+              layout={heatLayout}
+              frames={heatFrames}
+              onInitialized={(figure) => storeHeatState(figure)}
+              onUpdate={(figure) => storeHeatState(figure)}
+            />
+          </div>
           <Plot
-            data={data}
-            layout={layout}
-            frames={frames}
-            config={config}
-            onInitialized={(figure) => storeState(figure)}
-            onUpdate={(figure) => storeState(figure)}
+            data={barXData}
+            config={barXConfig}
+            layout={barXLayout}
+            frames={barXFrames}
+            onInitialized={(figure) => storeBarXState(figure)}
+            onUpdate={(figure) => storeBarXState(figure)}
           />
         </div>
       ) : (
