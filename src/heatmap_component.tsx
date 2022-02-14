@@ -25,15 +25,15 @@ let samples: number;
 let index: number;
 let filled: boolean;
 
-type ReportBuffer = {
-  image: number[][][];
-  hybridx: number[][];
-  hybridy: number[][];
+type Report = {
+  image: number[][];
+  hybridx: number[];
+  hybridy: number[];
 };
 
 const bufferSize = 1000;
-let buffer: ReportBuffer;
-let subBuffer: ReportBuffer|undefined;
+let buffer: Report[];
+let subBuffer: Report[]|undefined;
 
 let t00: number;
 let t11: number;
@@ -44,17 +44,9 @@ const updateSubBuffer = () => {
   const end = index;
   const start = index - samples;
   if (start < 0) {
-    subBuffer = {
-      image: [...buffer.image.slice(start), ...buffer.image.slice(0, end)],
-      hybridx: [...buffer.hybridx.slice(start), ...buffer.hybridx.slice(0, end)],
-      hybridy: [...buffer.hybridy.slice(start), ...buffer.hybridy.slice(0, end)]
-    };
+    subBuffer = [...buffer.slice(start), ...buffer.slice(0, end)];
   } else {
-    subBuffer = {
-      image: buffer.image.slice(start, end),
-      hybridx: buffer.hybridx.slice(start, end),
-      hybridy: buffer.hybridy.slice(start, end)
-    };
+    subBuffer = buffer.slice(start, end);
   }
 };
 
@@ -89,9 +81,11 @@ const eventHandler = (event: any) => {
   }
 
   index = (index + 1) % bufferSize;
-  buffer.image[index] = eventData.image;
-  buffer.hybridx[index] = eventData.hybridx;
-  buffer.hybridy[index] = eventData.hybridy;
+  buffer[index] = {
+    image: eventData.image,
+    hybridx: eventData.hybridx,
+    hybridy: eventData.hybridy
+  };
 
   if (!filled) {
     if (index + 1 >= samples) {
@@ -183,92 +177,120 @@ const HeatmapPlot = (props: any): JSX.Element => {
 
   const getMean = () => {
     if (subBuffer === undefined) {
-      heat = undefined;
-      return;
+      return undefined;
     }
     try {
-      heat = subBuffer.image.reduce(function(mean, cur) {
+      const mean = subBuffer.reduce(function(mean, cur) {
         for (let i = 0; i < props.numRows; i++) {
           for (let j = 0; j < props.numCols; j++) {
-            mean[i][j] += cur[i][j] / samples;
+            mean.image[i][j] += cur.image[i][j] / samples;
           }
         }
+        for (let i = 0; i < props.numCols; i++) {
+          mean.hybridx[i] += cur.hybridx[i] / samples;
+        }
+        for (let i = 0; i < props.numRows; i++) {
+          mean.hybridy[i] += cur.hybridy[i] / samples;
+        }
         return mean;
-      }, [...Array(props.numRows)].map(e => Array(props.numCols).fill(0)));
+      }, {
+        image: [...Array(props.numRows)].map(e => Array(props.numCols).fill(0)),
+        hybridx: [...Array(props.numCols)].map(e => 0),
+        hybridy: [...Array(props.numRows)].map(e => 0)
+      });
+      return mean;
     } catch {
-      heat = undefined;
+      return undefined;
     }
   };
 
   const getMax = () => {
     if (subBuffer === undefined) {
-      heat = undefined;
-      return;
+      return undefined;
     }
     try {
-      heat = subBuffer.image.reduce(function(max, cur) {
+      const max = subBuffer.reduce(function(max, cur) {
         for (let i = 0; i < props.numRows; i++) {
           for (let j = 0; j < props.numCols; j++) {
-            max[i][j] = cur[i][j] > max[i][j] ? cur[i][j] : max[i][j];
+            max.image[i][j] = cur.image[i][j] > max.image[i][j] ? cur.image[i][j] : max.image[i][j];
           }
         }
+        for (let i = 0; i < props.numCols; i++) {
+          max.hybridx[i] = cur.hybridx[i] > max.hybridx[i] ? cur.hybridx[i] : max.hybridx[i];
+        }
+        for (let i = 0; i < props.numRows; i++) {
+          max.hybridy[i] = cur.hybridy[i] > max.hybridy[i] ? cur.hybridy[i] : max.hybridy[i];
+        }
         return max;
-      }, [...Array(props.numRows)].map(e => Array(props.numCols).fill(-Infinity)));
+      }, {
+        image: [...Array(props.numRows)].map(e => Array(props.numCols).fill(-Infinity)),
+        hybridx: [...Array(props.numCols)].map(e => -Infinity),
+        hybridy: [...Array(props.numRows)].map(e => -Infinity)
+      });
+      return max;
     } catch {
-      heat = undefined;
+      return undefined;
     }
   };
 
   const getMin = () => {
     if (subBuffer === undefined) {
-      heat = undefined;
-      return;
+      return undefined;
     }
     try {
-      heat = subBuffer.image.reduce(function(min, cur) {
+      const min = subBuffer.reduce(function(min, cur) {
         for (let i = 0; i < props.numRows; i++) {
           for (let j = 0; j < props.numCols; j++) {
-            min[i][j] = cur[i][j] < min[i][j] ? cur[i][j] : min[i][j];
+            min.image[i][j] = cur.image[i][j] < min.image[i][j] ? cur.image[i][j] : min.image[i][j];
           }
         }
+        for (let i = 0; i < props.numCols; i++) {
+          min.hybridx[i] = cur.hybridx[i] < min.hybridx[i] ? cur.hybridx[i] : min.hybridx[i];
+        }
+        for (let i = 0; i < props.numRows; i++) {
+          min.hybridy[i] = cur.hybridy[i] < min.hybridy[i] ? cur.hybridy[i] : min.hybridy[i];
+        }
         return min;
-      }, [...Array(props.numRows)].map(e => Array(props.numCols).fill(Infinity)));
+      }, {
+        image: [...Array(props.numRows)].map(e => Array(props.numCols).fill(Infinity)),
+        hybridx: [...Array(props.numCols)].map(e => Infinity),
+        hybridy: [...Array(props.numRows)].map(e => Infinity)
+      });
+      return min;
     } catch {
-      heat = undefined;
+      return undefined;
     }
   };
 
   const getRange = () => {
     if (subBuffer === undefined) {
-      heat = undefined;
-      return;
+      return undefined;
     }
     try {
-      const max: number[][] = subBuffer.image.reduce(function(max, cur) {
-        for (let i = 0; i < props.numRows; i++) {
-          for (let j = 0; j < props.numCols; j++) {
-            max[i][j] = cur[i][j] > max[i][j] ? cur[i][j] : max[i][j];
-          }
-        }
-        return max;
-      }, [...Array(props.numRows)].map(e => Array(props.numCols).fill(-Infinity)));
-
-      const min: number[][] = subBuffer.image.reduce(function(min, cur) {
-        for (let i = 0; i < props.numRows; i++) {
-          for (let j = 0; j < props.numCols; j++) {
-            min[i][j] = cur[i][j] < min[i][j] ? cur[i][j] : min[i][j];
-          }
-        }
-        return min;
-      }, [...Array(props.numRows)].map(e => Array(props.numCols).fill(Infinity)));
-
-      heat = max.map(function(rArray, rIndex) {
+      const max = getMax();
+      const min = getMin();
+      if (max === undefined || min === undefined) {
+        return undefined;
+      }
+      const range = {
+        image: [...Array(props.numRows)].map(e => Array(props.numCols)),
+        hybridx: [...Array(props.numCols)],
+        hybridy: [...Array(props.numRows)]
+      };
+      range.image = max.image.map(function(rArray, rIndex) {
         return rArray.map(function(maxElement, cIndex) {
-          return maxElement - min[rIndex][cIndex];
+          return maxElement - min.image[rIndex][cIndex];
         });
       });
+      range.hybridx = max.hybridx.map(function(maxElement, index) {
+        return maxElement - min.hybridx[index];
+      });
+      range.hybridy = max.hybridy.map(function(maxElement, index) {
+        return maxElement - min.hybridy[index];
+      });
+      return range;
     } catch {
-      heat = undefined;
+      return undefined;
     }
   };
 
@@ -277,28 +299,32 @@ const HeatmapPlot = (props: any): JSX.Element => {
       heat = undefined;
       return;
     }
+    let result: Report|undefined;
     switch (statistics) {
       case 'Single':
-        heat = buffer.image[index];
+        result = buffer[index];
         break;
       case 'Mean':
-        getMean();
+        result = getMean();
         break;
       case 'Max' :
-        getMax();
+        result = getMax();
         break;
       case 'Min' :
-        getMin();
+        result = getMin();
         break;
       case 'Range':
-        getRange();
+        result = getRange();
         break;
       default:
-        heat = undefined;
+        result = undefined;
         break;
     }
-    if (heat === undefined) {
+    if (result === undefined) {
+      heat = undefined;
       return;
+    } else {
+      heat = result.image;
     }
     const minRow = heat!.map((row: number[]) => {
       return Math.min.apply(Math, row);
@@ -355,11 +381,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
     eventData = undefined;
     index = bufferSize - 1;
     filled = false;
-    buffer = {
-      image: new Array(bufferSize),
-      hybridx: new Array(bufferSize),
-      hybridy: new Array(bufferSize),
-    };
+    buffer = new Array(bufferSize);
     subBuffer = undefined;
     requestID = requestAnimationFrame(animatePlot);
   };
