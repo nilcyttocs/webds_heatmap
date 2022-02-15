@@ -462,6 +462,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
           t: barXTMargin,
           b: barXBMargin
         },
+        plot_bgcolor: '#F3F3F3',
         xaxis: {
           mirror: true,
           showline: true,
@@ -469,7 +470,8 @@ const HeatmapPlot = (props: any): JSX.Element => {
           ticks: '',
           tickformat: '>-d',
           tickmode: 'array',
-          tickvals: []
+          tickvals: [],
+          linecolor: '#A9A9A9'
         },
         yaxis: {
           mirror: true,
@@ -480,7 +482,8 @@ const HeatmapPlot = (props: any): JSX.Element => {
           tickmode: 'array',
           tickvals: [barXMin, barXMax],
           range: [barXMin, barXMax],
-          zerolinecolor: '#969696'
+          linecolor: '#A9A9A9',
+          zerolinecolor: '#A9A9A9'
         }
       }
     );
@@ -501,6 +504,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
           t: barYTMargin,
           b: barYBMargin
         },
+        plot_bgcolor: '#F3F3F3',
         xaxis: {
           side: 'top',
           mirror: true,
@@ -511,7 +515,8 @@ const HeatmapPlot = (props: any): JSX.Element => {
           tickmode: 'array',
           tickvals: [barYMin, barYMax],
           range: [barYMin, barYMax],
-          zerolinecolor: '#969696'
+          linecolor: '#A9A9A9',
+          zerolinecolor: '#A9A9A9'
         },
         yaxis: {
           mirror: true,
@@ -520,7 +525,8 @@ const HeatmapPlot = (props: any): JSX.Element => {
           ticks: '',
           tickformat: '>-d',
           tickmode: 'array',
-          tickvals: []
+          tickvals: [],
+          linecolor: '#A9A9A9'
         }
       }
     );
