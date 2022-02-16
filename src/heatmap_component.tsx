@@ -666,7 +666,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
           />
         </div>
       ) : (
-        <div style={{width: (plotWidth) + 'px', fontSize: '18px', textAlign: 'center'}}>
+        <div style={{width: (plotWidth) + 'px', fontSize: '18px', textAlign: 'center', whiteSpace: 'nowrap'}}>
           Please select report type
         </div>
       )}

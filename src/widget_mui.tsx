@@ -126,7 +126,7 @@ export const HeatmapMui = (props: any): JSX.Element => {
               spacing={1}
               direction='row'
             >
-              <div id='reportTypeText' style={{paddingTop: '8px', fontSize: '18px'}}>
+              <div id='reportTypeText' style={{paddingTop: '8px', fontSize: '18px', whiteSpace: 'nowrap'}}>
                 Report Type
               </div>
               <FormControl
@@ -165,7 +165,7 @@ export const HeatmapMui = (props: any): JSX.Element => {
                 spacing={1}
                 direction='row'
               >
-                <div id='statisticsText' style={{paddingTop: '8px', fontSize: '18px'}}>
+                <div id='statisticsText' style={{paddingTop: '8px', fontSize: '18px', whiteSpace: 'nowrap'}}>
                   Statistics
                 </div>
                 <FormControl
@@ -191,7 +191,7 @@ export const HeatmapMui = (props: any): JSX.Element => {
                 null
               ) : (
                 <div>
-                  <div style={{marginBottom: '5px', fontSize: '18px'}}>
+                  <div style={{marginBottom: '5px', fontSize: '18px', whiteSpace: 'nowrap'}}>
                     Samples: {samples}
                   </div>
                   <Slider
@@ -202,7 +202,7 @@ export const HeatmapMui = (props: any): JSX.Element => {
                     valueLabelDisplay='auto'
                     onChange={changeSamples}
                   />
-                  <div style={{marginTop: '10px', fontSize: '18px'}}>
+                  <div style={{marginTop: '10px', fontSize: '18px', whiteSpace: 'nowrap'}}>
                     Sample Rate: {sampleRate}
                   </div>
                 </div>
