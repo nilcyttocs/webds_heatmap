@@ -16,8 +16,6 @@ import HeatmapPlot from './heatmap_component';
 
 import webdsTheme from './webdsTheme';
 
-const dividerWidth = 95 + 8 + 180 + 56 + 69 + 8 + 180 + 56 + 40;
-
 const reportTypeList = [
   'Delta Image',
   'Raw Image',
@@ -32,9 +30,11 @@ const statisticsList = [
   'Range'
 ];
 
-const samplesMin = 100;
-const samplesStep = 100;
-const samplesMax = 1000;
+const SAMPLES_MIN = 100;
+const SAMPLES_STEP = 100;
+const SAMPLES_MAX = 1000;
+
+const SELECT_WIDTH = 200;
 
 export const HeatmapMui = (props: any): JSX.Element => {
   const [run, setRun] = useState<boolean>(false);
@@ -42,6 +42,9 @@ export const HeatmapMui = (props: any): JSX.Element => {
   const [statistics, setStatistics] = useState<string>('Single');
   const [samples, setSamples] = useState<number>(200);
   const [sampleRate, setSampleRate] = useState<number>(0);
+  const [paperWidth, setPaperWidth] = useState<number>(0);
+  const [inputSpacing, setInputSpacing] = useState<number>(0);
+  const [spareSpacing, setSpareSpacing] = useState<number>(0);
 
   const resetReportType = () => {
     setReportType('');
@@ -77,12 +80,31 @@ export const HeatmapMui = (props: any): JSX.Element => {
     setSampleRate(rate);
   };
 
+  const updatePaperWidth = (width: number) => {
+    let reportTypeWidth = 0;
+    let statisticsWidth = 0;
+    let text = document.getElementById('reportTypeText');
+    if (text) {
+      text.style.fontSize = '18px';
+      reportTypeWidth = text.clientWidth;
+    }
+    text = document.getElementById('statisticsText');
+    if (text) {
+      text.style.fontSize = '18px';
+      statisticsWidth = text.clientWidth;
+    }
+    const spacing = width - (reportTypeWidth + 8 + SELECT_WIDTH + statisticsWidth + 8 + SELECT_WIDTH + 40);
+    setPaperWidth(width);
+    setInputSpacing(Math.floor(spacing / (2 * 8)));
+    setSpareSpacing(spacing % (2 * 8));
+  };
+
   return (
     <ThemeProvider theme={webdsTheme}>
       <div>
         <Stack
           spacing={5}
-          divider={<Divider orientation='horizontal' sx={{width: dividerWidth + 'px'}}/>}
+          divider={<Divider orientation='horizontal' sx={{width: paperWidth + 'px'}}/>}
           sx={{marginLeft: '50px', marginTop: '50px'}}
         >
           <HeatmapPlot
@@ -93,9 +115,10 @@ export const HeatmapMui = (props: any): JSX.Element => {
             statistics={statistics}
             samples={samples}
             resetReportType={resetReportType}
-            updateSampleRate={updateSampleRate}/>
+            updateSampleRate={updateSampleRate}
+            updatePaperWidth={updatePaperWidth}/>
           <Stack
-            spacing={7}
+            spacing={inputSpacing}
             direction='row'
             sx={{height: '70px'}}
           >
@@ -103,12 +126,12 @@ export const HeatmapMui = (props: any): JSX.Element => {
               spacing={1}
               direction='row'
             >
-              <div style={{paddingTop: '8px', fontSize: '18px'}}>
+              <div id='reportTypeText' style={{paddingTop: '8px', fontSize: '18px'}}>
                 Report Type
               </div>
               <FormControl
                 size='small'
-                sx={{minWidth: '180px', maxWidth: '180px'}}>
+                sx={{minWidth: SELECT_WIDTH + 'px', maxWidth: SELECT_WIDTH + 'px'}}>
                 <Select
                   displayEmpty
                   value={reportType}
@@ -142,13 +165,13 @@ export const HeatmapMui = (props: any): JSX.Element => {
                 spacing={1}
                 direction='row'
               >
-                <div style={{paddingTop: '8px', fontSize: '18px'}}>
+                <div id='statisticsText' style={{paddingTop: '8px', fontSize: '18px'}}>
                   Statistics
                 </div>
                 <FormControl
                   size='small'
                   disabled={!reportType}
-                  sx={{minWidth: '180px', maxWidth: '180px'}}>
+                  sx={{minWidth: SELECT_WIDTH + 'px', maxWidth: SELECT_WIDTH + 'px'}}>
                   <Select
                     value={statistics}
                     onChange={changeStatistics}
@@ -173,9 +196,9 @@ export const HeatmapMui = (props: any): JSX.Element => {
                   </div>
                   <Slider
                     value={samples}
-                    min={samplesMin}
-                    step={samplesStep}
-                    max={samplesMax}
+                    min={SAMPLES_MIN}
+                    step={SAMPLES_STEP}
+                    max={SAMPLES_MAX}
                     valueLabelDisplay='auto'
                     onChange={changeSamples}
                   />
@@ -185,25 +208,27 @@ export const HeatmapMui = (props: any): JSX.Element => {
                 </div>
               )}
             </Stack>
-            {run === false ? (
-              <Fab
-                color='primary'
-                size='small'
-                disabled={!reportType}
-                onClick={() => {setRun(true);}}
-              >
-                <PlayArrowIcon/>
-              </Fab>
-            ) : (
-              <Fab
-                color='primary'
-                size='small'
-                disabled={!reportType}
-                onClick={() => {setRun(false);}}
-              >
-                <StopIcon/>
-              </Fab>
-            )}
+            <div style={{paddingLeft: spareSpacing + 'px'}}>
+              {run === false ? (
+                <Fab
+                  color='primary'
+                  size='small'
+                  disabled={!reportType}
+                  onClick={() => {setRun(true);}}
+                >
+                  <PlayArrowIcon/>
+                </Fab>
+              ) : (
+                <Fab
+                  color='primary'
+                  size='small'
+                  disabled={!reportType}
+                  onClick={() => {setRun(false);}}
+                >
+                  <StopIcon/>
+                </Fab>
+              )}
+            </div>
           </Stack>
         </Stack>
       </div>

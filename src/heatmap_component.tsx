@@ -11,8 +11,8 @@ const REPORT_DELTA = 18;
 const REPORT_RAW = 19;
 const REPORT_BASELINE = 20;
 
-const HEAT_PLOT_HEIGHT = 350;
-const BARX_PLOT_HEIGHT = 70;
+const HEAT_PLOT_HEIGHT = 300;
+const BARX_PLOT_HEIGHT = 60;
 const BARY_PLOT_HEIGHT = HEAT_PLOT_HEIGHT;
 const BARY_PLOT_WIDTH = BARX_PLOT_HEIGHT;
 
@@ -156,7 +156,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
   const [barYLayout, setBarYLayout] = useState<any>({});
   const [barYFrames, setBarYFrames] = useState<any>([]);
 
-  const barYLMargin = 20;
+  const barYLMargin = 35;
   const barYRMargin = 20;
   const barYTMargin = 20;
   const barYBMargin = 20;
@@ -164,7 +164,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
   const barYWidth = BARY_PLOT_WIDTH + barYLMargin + barYRMargin;
 
   const heatLMargin = 10;
-  const heatRMargin = 120;
+  const heatRMargin = 105;
   const heatTMargin = barYTMargin;
   const heatBMargin = barYBMargin;
   const heatHeight = HEAT_PLOT_HEIGHT + heatTMargin + heatBMargin;
@@ -176,6 +176,9 @@ const HeatmapPlot = (props: any): JSX.Element => {
   const barXBMargin = 10;
   const barXHeight = BARX_PLOT_HEIGHT + barXTMargin + barXBMargin;
   const barXWidth = Math.floor(HEAT_PLOT_HEIGHT * props.numCols / props.numRows) + barXLMargin + barXRMargin;
+
+  const plotWidth = barYWidth + heatWidth;
+  const plotHeight = heatHeight + barXHeight;
 
   const plotConfig = {displayModeBar: false};
 
@@ -624,11 +627,15 @@ const HeatmapPlot = (props: any): JSX.Element => {
     run = props.run;
   }, [props.run]);
 
+  useEffect(() => {
+    props.updatePaperWidth(plotWidth);
+  }, []);
+
   return (
-    <div style={{height: (50 + heatHeight + barXHeight) + 'px', display: 'flex', alignItems: 'center'}}>
+    <div style={{height: (50 + plotHeight) + 'px', display: 'flex', alignItems: 'center'}}>
       {show ? (
         <div>
-          <div style={{width: (heatWidth) + 'px', height: '50px', fontSize: '20px', textAlign: 'center'}}>
+          <div style={{width: (plotWidth) + 'px', height: '50px', fontSize: '20px', textAlign: 'center'}}>
             {reportType}
           </div>
           <div style={{display: 'flex', flexWrap: 'nowrap'}}>
@@ -659,7 +666,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
           />
         </div>
       ) : (
-        <div style={{paddingLeft: '50px', fontSize: '18px'}}>
+        <div style={{width: (plotWidth) + 'px', fontSize: '18px', textAlign: 'center'}}>
           Please select report type
         </div>
       )}
