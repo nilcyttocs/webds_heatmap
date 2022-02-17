@@ -156,7 +156,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
   const [barYLayout, setBarYLayout] = useState<any>({});
   const [barYFrames, setBarYFrames] = useState<any>([]);
 
-  const barYLMargin = 35;
+  const barYLMargin = 40;
   const barYRMargin = 20;
   const barYTMargin = 20;
   const barYBMargin = 20;
@@ -164,7 +164,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
   const barYWidth = BARY_PLOT_WIDTH + barYLMargin + barYRMargin;
 
   const heatLMargin = 10;
-  const heatRMargin = 105;
+  const heatRMargin = 110;
   const heatTMargin = barYTMargin;
   const heatBMargin = barYBMargin;
   const heatHeight = HEAT_PLOT_HEIGHT + heatTMargin + heatBMargin;
