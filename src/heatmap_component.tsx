@@ -139,7 +139,8 @@ const setReport = async (disable: number[], enable: number[]): Promise<void> => 
 };
 
 const HeatmapPlot = (props: any): JSX.Element => {
-  const [show, setShow] = useState<boolean>(false);
+  const [showPlot, setShowPlot] = useState<boolean>(false);
+  const [showMessage, setShowMessage] = useState<boolean>(false);
 
   const [heatData, setHeatData] = useState<any>([]);
   const [heatConfig, setHeatConfig] = useState<any>({});
@@ -545,7 +546,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
       t0 = t1;
       props.updateSampleRate(fps);
     }
-    setShow(true);
+    setShowPlot(true);
     requestID = requestAnimationFrame(animatePlot);
   };
 
@@ -569,9 +570,11 @@ const HeatmapPlot = (props: any): JSX.Element => {
     reportType = props.reportType;
     stopAnimation();
     if (!reportType) {
-      setShow(false);
+      setShowMessage(true);
+      setShowPlot(false);
       return;
     }
+    setShowMessage(false);
     setHeatConfig(plotConfig);
     setHeatLayout(
       {
@@ -633,7 +636,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
 
   return (
     <div style={{height: (50 + plotHeight) + 'px', display: 'flex', alignItems: 'center'}}>
-      {show ? (
+      {showPlot ? (
         <div>
           <div style={{width: (plotWidth) + 'px', height: '50px', fontSize: '20px', textAlign: 'center'}}>
             {reportType}
@@ -666,9 +669,13 @@ const HeatmapPlot = (props: any): JSX.Element => {
           />
         </div>
       ) : (
-        <div style={{width: (plotWidth) + 'px', fontSize: '18px', textAlign: 'center', whiteSpace: 'nowrap'}}>
-          Please select report type
-        </div>
+        showMessage ? (
+          <div style={{width: (plotWidth) + 'px', fontSize: '18px', textAlign: 'center', whiteSpace: 'nowrap'}}>
+            Please select report type
+          </div>
+        ) : (
+          null
+        )
       )}
     </div>
   );

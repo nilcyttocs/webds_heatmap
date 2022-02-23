@@ -37,8 +37,8 @@ const SAMPLES_MAX = 1000;
 const SELECT_WIDTH = 200;
 
 export const HeatmapMui = (props: any): JSX.Element => {
-  const [run, setRun] = useState<boolean>(false);
-  const [reportType, setReportType] = useState<string>('');
+  const [run, setRun] = useState<boolean>(true);
+  const [reportType, setReportType] = useState<string>('Delta Image');
   const [statistics, setStatistics] = useState<string>('Single');
   const [samples, setSamples] = useState<number>(200);
   const [sampleRate, setSampleRate] = useState<number>(0);
