@@ -14,7 +14,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 import HeatmapPlot from './heatmap_component';
 
-import webdsTheme from './webdsTheme';
+import webdsTheme from './webds_theme';
 
 const reportTypeList = [
   'Delta Image',
@@ -211,8 +211,6 @@ export const HeatmapMui = (props: any): JSX.Element => {
             <div style={{paddingLeft: spareSpacing + 'px'}}>
               {run === false ? (
                 <Fab
-                  color='primary'
-                  size='small'
                   disabled={!reportType}
                   onClick={() => {setRun(true);}}
                 >
@@ -220,8 +218,6 @@ export const HeatmapMui = (props: any): JSX.Element => {
                 </Fab>
               ) : (
                 <Fab
-                  color='primary'
-                  size='small'
                   disabled={!reportType}
                   onClick={() => {setRun(false);}}
                 >
