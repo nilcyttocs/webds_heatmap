@@ -11,16 +11,14 @@ const HeatmapContainer = (props: any): JSX.Element => {
   const [dimensions, setDimensions] = useState<any>([]);
 
   const getDeviceInfo = async () => {
-    await requestAPI<any>('command?query=app-info')
-    .then(data => {
+    try {
+      const data = await requestAPI<any>('command?query=app-info');
       if (data.numCols && data.numRows) {
         setDimensions([data.numCols, data.numRows]);
       }
-    }).catch(reason => {
-      console.error(
-        `Error on GET /webds/command?query=app-info\n${reason}`
-      );
-    });
+    } catch (error) {
+      console.error(`Error - GET /webds/command?query=app-info\n${error}`);
+    }
   };
 
   useEffect(() => {

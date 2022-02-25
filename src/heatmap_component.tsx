@@ -120,22 +120,19 @@ const addEvent = () => {
   eventSource.addEventListener('error', errorHandler, false);
 };
 
-const setReport = async (disable: number[], enable: number[]): Promise<void> => {
-  let status = false;
+const setReport = async (disable: number[], enable: number[]) => {
   removeEvent();
   const dataToSend = {enable, disable, fps: FPS};
-  await requestAPI<any>('report', {
-    body: JSON.stringify(dataToSend),
-    method: 'POST'
-  }).then(() => {
+  try {
+    await requestAPI<any>('report', {
+      body: JSON.stringify(dataToSend),
+      method: 'POST'
+    });
     addEvent();
-    status = true;
-  }).catch(reason => {
-    console.error(
-      `Error on POST /webds/report\n${reason}`
-    );
-  });
-  return status ? Promise.resolve() : Promise.reject();
+  } catch (error) {
+    console.error(`Error - POST /webds/report\n${error}`);
+    throw 'Failed to set report enable/disable';
+  }
 };
 
 const HeatmapPlot = (props: any): JSX.Element => {
@@ -566,7 +563,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
     requestID = requestAnimationFrame(animatePlot);
   };
 
-  const newPlot = async () => {
+  const newPlot = () => {
     reportType = props.reportType;
     stopAnimation();
     if (!reportType) {
@@ -600,13 +597,14 @@ const HeatmapPlot = (props: any): JSX.Element => {
     setBarYConfig(plotConfig);
     try {
       if (reportType === 'Delta Image') {
-        await setReport([REPORT_TOUCH, REPORT_RAW, REPORT_BASELINE], [REPORT_DELTA]);
+        setReport([REPORT_TOUCH, REPORT_RAW, REPORT_BASELINE], [REPORT_DELTA]);
       } else if (reportType === 'Raw Image') {
-        await setReport([REPORT_TOUCH, REPORT_DELTA, REPORT_BASELINE], [REPORT_RAW]);
+        setReport([REPORT_TOUCH, REPORT_DELTA, REPORT_BASELINE], [REPORT_RAW]);
       } else if (reportType === 'Baseline Image') {
-        await setReport([REPORT_TOUCH, REPORT_DELTA, REPORT_RAW], [REPORT_BASELINE]);
+        setReport([REPORT_TOUCH, REPORT_DELTA, REPORT_RAW], [REPORT_BASELINE]);
       }
-    } catch {
+    } catch (error) {
+      console.error(error);
       props.resetReportType();
       return;
     }
