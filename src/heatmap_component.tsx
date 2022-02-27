@@ -130,8 +130,8 @@ const setReport = async (disable: number[], enable: number[]) => {
     });
     addEvent();
   } catch (error) {
-    console.error(`Error - POST /webds/report\n${error}`);
-    throw 'Failed to set report enable/disable';
+    console.error('Error - POST /webds/report');
+    throw error;
   }
 };
 
