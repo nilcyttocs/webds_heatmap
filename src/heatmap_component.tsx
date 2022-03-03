@@ -110,6 +110,7 @@ const removeEvent = () => {
   if (eventSource && eventSource.readyState != SSE_CLOSED) {
     eventSource.removeEventListener('report', eventHandler, false);
     eventSource.close();
+    eventSource = undefined;
   }
 };
 
