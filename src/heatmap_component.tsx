@@ -114,6 +114,9 @@ const removeEvent = () => {
 };
 
 const addEvent = () => {
+  if (eventSource) {
+    return;
+  }
   eventError = false;
   eventSource = new window.EventSource('/webds/report');
   eventSource.addEventListener('report', eventHandler, false);
@@ -121,7 +124,6 @@ const addEvent = () => {
 };
 
 const setReport = async (disable: number[], enable: number[]) => {
-  removeEvent();
   const dataToSend = {enable, disable, fps: FPS};
   try {
     await requestAPI<any>('report', {
@@ -612,8 +614,11 @@ const HeatmapPlot = (props: any): JSX.Element => {
   };
 
   useEffect(() => {
-    newPlot();
     return () => {stopPlot();}
+  }, []);
+
+  useEffect(() => {
+    newPlot();
   }, [props.reportType]);
 
   useEffect(() => {
