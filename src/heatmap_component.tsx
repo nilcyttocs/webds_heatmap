@@ -65,7 +65,6 @@ const errorHandler = (error: any) => {
 const eventHandler = (event: any) => {
   const data = JSON.parse(event.data);
   if (!data || !data.report) {
-    eventData = undefined;
     return;
   }
   if ((reportType === 'Delta Image' && data.report[0] === 'delta') ||
@@ -73,7 +72,6 @@ const eventHandler = (event: any) => {
       (reportType === 'Baseline Image' && data.report[0] === 'baseline')) {
     eventData = data.report[1];
   } else {
-    eventData = undefined;
     return;
   }
 
