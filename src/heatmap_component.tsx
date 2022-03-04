@@ -229,11 +229,6 @@ const HeatmapPlot = (props: any): JSX.Element => {
     }
   };
 
-  const stopPlot = () => {
-    stopAnimation();
-    removeEvent();
-  };
-
   const getMean = () => {
     if (subBuffer === undefined) {
       return undefined;
@@ -570,7 +565,6 @@ const HeatmapPlot = (props: any): JSX.Element => {
 
   const newPlot = () => {
     reportType = props.reportType;
-    stopAnimation();
     if (!reportType) {
       setShowMessage(true);
       setShowPlot(false);
@@ -617,11 +611,12 @@ const HeatmapPlot = (props: any): JSX.Element => {
   };
 
   useEffect(() => {
-    return () => {stopPlot();}
+    return () => {removeEvent();}
   }, []);
 
   useEffect(() => {
     newPlot();
+    return () => {stopAnimation();}
   }, [props.reportType]);
 
   useEffect(() => {
