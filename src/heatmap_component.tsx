@@ -174,7 +174,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
   const heatWidth = Math.floor(HEAT_PLOT_HEIGHT * props.numCols / props.numRows) + heatLMargin + heatRMargin;
 
   const barXLMargin = barYWidth + heatLMargin;
-  const barXRMargin = 10;
+  const barXRMargin = 110;
   const barXTMargin = 10;
   const barXBMargin = 10;
   const barXHeight = BARX_PLOT_HEIGHT + barXTMargin + barXBMargin;
@@ -184,6 +184,9 @@ const HeatmapPlot = (props: any): JSX.Element => {
   const plotHeight = heatHeight + barXHeight;
 
   const plotConfig = {displayModeBar: false};
+
+  const plot_bgcolor = 'rgba(0.75, 0.75, 0.75, 0.1)';
+  const paper_bgcolor = 'rgba(0, 0, 0, 0)';
 
   let heatZ: number[][]|undefined;
   let heatZMin: number;
@@ -463,7 +466,8 @@ const HeatmapPlot = (props: any): JSX.Element => {
           t: barXTMargin,
           b: barXBMargin
         },
-        plot_bgcolor: '#F3F3F3',
+        plot_bgcolor,
+        paper_bgcolor,
         xaxis: {
           mirror: true,
           showline: true,
@@ -505,7 +509,8 @@ const HeatmapPlot = (props: any): JSX.Element => {
           t: barYTMargin,
           b: barYBMargin
         },
-        plot_bgcolor: '#F3F3F3',
+        plot_bgcolor,
+        paper_bgcolor,
         xaxis: {
           side: 'top',
           mirror: true,
@@ -582,6 +587,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
           t: heatTMargin,
           b: heatBMargin
         },
+        paper_bgcolor,
         xaxis: {
           ticks: '',
           showticklabels: false
