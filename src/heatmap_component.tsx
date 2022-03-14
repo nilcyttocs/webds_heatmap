@@ -16,7 +16,10 @@ const BARX_PLOT_HEIGHT = 60;
 const BARY_PLOT_HEIGHT = HEAT_PLOT_HEIGHT;
 const BARY_PLOT_WIDTH = BARX_PLOT_HEIGHT;
 
-const FPS = 120;
+const REPORT_FPS = 120;
+
+const RENDER_FPS = 30;
+const RENDER_INTERVAL = 1000 / RENDER_FPS;
 
 let run = false;
 let reportType = '';
@@ -127,7 +130,7 @@ const addEvent = () => {
 };
 
 const setReport = async (disable: number[], enable: number[]) => {
-  const dataToSend = {enable, disable, fps: FPS};
+  const dataToSend = {enable, disable, fps: REPORT_FPS};
   try {
     await requestAPI<any>('report', {
       body: JSON.stringify(dataToSend),
@@ -202,6 +205,8 @@ const HeatmapPlot = (props: any): JSX.Element => {
 
   let t0: number;
   let t1: number;
+  let tThen: number;
+  let frameCount: number;
   let requestID: number|undefined;
 
   const storeHeatState = (figure: any) => {
@@ -432,15 +437,28 @@ const HeatmapPlot = (props: any): JSX.Element => {
       props.resetReportType();
       return;
     }
+
+    requestID = requestAnimationFrame(animatePlot);
+
     if (!run) {
-      requestID = requestAnimationFrame(animatePlot);
       return;
     }
+
+    const tNow = window.performance.now();
+    const elapsed = tNow - tThen;
+
+    if (elapsed <= RENDER_INTERVAL) {
+      return;
+    }
+
+    tThen = tNow - (elapsed % RENDER_INTERVAL);
+
     computePlot();
+
     if (heatZ === undefined || barX === undefined || barY === undefined) {
-      requestID = requestAnimationFrame(animatePlot);
       return;
     }
+
     setHeatData(
       [{
         z: heatZ,
@@ -456,6 +474,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
         }
       }]
     );
+
     setBarXLayout(
       {
         width: barXWidth,
@@ -492,6 +511,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
         }
       }
     );
+
     setBarXData(
       [{
         y: barX,
@@ -499,6 +519,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
         width: 0.5
       }]
     );
+
     setBarYLayout(
       {
         width: barYWidth,
@@ -536,6 +557,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
         }
       }
     );
+
     setBarYData(
       [{
         x: barY,
@@ -543,18 +565,23 @@ const HeatmapPlot = (props: any): JSX.Element => {
         width: 0.5
       }]
     );
+
+    frameCount++;
     t1 = Date.now();
     if (t1 - t0 >= 1000) {
       t0 = t1;
+      console.log(`ADC FPS = ${frameCount}`);
+      frameCount = 0;
       props.updateSampleRate(fps);
     }
+
     setShowPlot(true);
-    requestID = requestAnimationFrame(animatePlot);
   };
 
   const startAnimation = () => {
     t0 = Date.now();
     t00 = Date.now();
+    frameCount = 0;
     barXMin = undefined;
     barXMax = undefined;
     barYMin = undefined;
@@ -565,7 +592,8 @@ const HeatmapPlot = (props: any): JSX.Element => {
     filled = false;
     buffer = new Array(bufferSize);
     subBuffer = undefined;
-    requestID = requestAnimationFrame(animatePlot);
+    tThen = window.performance.now();
+    animatePlot();
   };
 
   const newPlot = () => {
