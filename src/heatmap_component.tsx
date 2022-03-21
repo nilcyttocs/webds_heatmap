@@ -63,6 +63,7 @@ const updateSubBuffer = () => {
 
 const errorHandler = (error: any) => {
   eventError = true;
+  removeEvent();
   console.error(
     `Error on GET /webds/report\n${error}`
   );
@@ -132,7 +133,7 @@ const addEvent = () => {
   eventSource.addEventListener('error', errorHandler, false);
 };
 
-const setReport = async (disable: number[], enable: number[]) => {
+const setReport = async (disable: number[], enable: number[]): Promise<void> => {
   const dataToSend = {enable, disable, fps: REPORT_FPS};
   try {
     await requestAPI<any>('report', {
@@ -142,8 +143,9 @@ const setReport = async (disable: number[], enable: number[]) => {
     addEvent();
   } catch (error) {
     console.error('Error - POST /webds/report');
-    throw error;
+    return Promise.reject('Failed to enable/disable report types');
   }
+  return Promise.resolve();
 };
 
 const HeatmapPlot = (props: any): JSX.Element => {
@@ -631,7 +633,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
     animatePlot();
   };
 
-  const newPlot = () => {
+  const newPlot = async () => {
     reportType = props.reportType;
     if (!reportType) {
       setShowMessage(true);
@@ -644,11 +646,11 @@ const HeatmapPlot = (props: any): JSX.Element => {
     setBarYConfig(plotConfig);
     try {
       if (reportType === 'Delta Image') {
-        setReport([REPORT_TOUCH, REPORT_RAW, REPORT_BASELINE], [REPORT_DELTA]);
+        await setReport([REPORT_TOUCH, REPORT_RAW, REPORT_BASELINE], [REPORT_DELTA]);
       } else if (reportType === 'Raw Image') {
-        setReport([REPORT_TOUCH, REPORT_DELTA, REPORT_BASELINE], [REPORT_RAW]);
+        await setReport([REPORT_TOUCH, REPORT_DELTA, REPORT_BASELINE], [REPORT_RAW]);
       } else if (reportType === 'Baseline Image') {
-        setReport([REPORT_TOUCH, REPORT_DELTA, REPORT_RAW], [REPORT_BASELINE]);
+        await setReport([REPORT_TOUCH, REPORT_DELTA, REPORT_RAW], [REPORT_BASELINE]);
       }
     } catch (error) {
       console.error(error);
