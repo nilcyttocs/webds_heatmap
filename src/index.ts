@@ -11,6 +11,8 @@ import {
 
 import { ILauncher } from '@jupyterlab/launcher';
 
+import { WebDSService } from '@webds/service';
+
 import { heatmapIcon } from './icons';
 
 import { HeatmapWidget } from './widget_container';
@@ -21,8 +23,8 @@ import { HeatmapWidget } from './widget_container';
 const plugin: JupyterFrontEndPlugin<void> = {
   id: '@webds/heatmap:plugin',
   autoStart: true,
-  requires: [ILauncher, ILayoutRestorer],
-  activate: (app: JupyterFrontEnd, launcher: ILauncher, restorer: ILayoutRestorer) => {
+  requires: [ILauncher, ILayoutRestorer, WebDSService],
+  activate: (app: JupyterFrontEnd, launcher: ILauncher, restorer: ILayoutRestorer, service: WebDSService) => {
     console.log('JupyterLab extension @webds/heatmap is activated!');
 
     let widget: MainAreaWidget;
@@ -36,7 +38,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
       },
       execute: () => {
         if (!widget || widget.isDisposed) {
-          const content = new HeatmapWidget();
+          const content = new HeatmapWidget(service);
           widget = new MainAreaWidget<HeatmapWidget>({content});
           widget.id = 'webds_heatmap_widget';
           widget.title.label = 'ADC Data';

@@ -6,6 +6,7 @@ import Select from '@mui/material/Select';
 import Slider from '@mui/material/Slider';
 import Divider from '@mui/material/Divider';
 import MenuItem from '@mui/material/MenuItem';
+import Typography from '@mui/material/Typography';
 import FormControl from '@mui/material/FormControl';
 import { ThemeProvider } from '@mui/material/styles';
 
@@ -13,8 +14,6 @@ import StopIcon from '@mui/icons-material/Stop';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 import HeatmapPlot from './heatmap_component';
-
-import webdsTheme from './webds_theme';
 
 const reportTypeList = [
   'Delta Image',
@@ -85,12 +84,10 @@ export const HeatmapMui = (props: any): JSX.Element => {
     let statisticsWidth = 0;
     let text = document.getElementById('reportTypeText');
     if (text) {
-      text.style.fontSize = '18px';
       reportTypeWidth = text.clientWidth;
     }
     text = document.getElementById('statisticsText');
     if (text) {
-      text.style.fontSize = '18px';
       statisticsWidth = text.clientWidth;
     }
     const spacing = width - (reportTypeWidth + 8 + SELECT_WIDTH + statisticsWidth + 8 + SELECT_WIDTH + 40);
@@ -100,17 +97,17 @@ export const HeatmapMui = (props: any): JSX.Element => {
   };
 
   return (
-    <ThemeProvider theme={webdsTheme}>
+    <ThemeProvider theme={props.theme}>
       <div>
         <Stack
           spacing={5}
           divider={<Divider orientation='horizontal' sx={{width: paperWidth + 'px'}}/>}
-          sx={{marginLeft: '24px', marginTop: '20px'}}
         >
           <HeatmapPlot
             run={run}
             numCols={props.numCols}
             numRows={props.numRows}
+            fontColor={props.fontColor}
             reportType={reportType}
             statistics={statistics}
             samples={samples}
@@ -120,15 +117,18 @@ export const HeatmapMui = (props: any): JSX.Element => {
           <Stack
             spacing={inputSpacing}
             direction='row'
-            sx={{height: '70px'}}
+            sx={{width: paperWidth + 'px', height: '70px'}}
           >
             <Stack
               spacing={1}
               direction='row'
             >
-              <div id='reportTypeText' style={{paddingTop: '8px', fontSize: '18px', whiteSpace: 'nowrap'}}>
+              <Typography
+                id='reportTypeText'
+                sx={{paddingTop: '10px'}}
+              >
                 Report Type
-              </div>
+              </Typography>
               <FormControl
                 size='small'
                 sx={{minWidth: SELECT_WIDTH + 'px', maxWidth: SELECT_WIDTH + 'px'}}>
@@ -165,9 +165,12 @@ export const HeatmapMui = (props: any): JSX.Element => {
                 spacing={1}
                 direction='row'
               >
-                <div id='statisticsText' style={{paddingTop: '8px', fontSize: '18px', whiteSpace: 'nowrap'}}>
+                <Typography
+                  id='statisticsText'
+                  sx={{paddingTop: '10px'}}
+                >
                   Statistics
-                </div>
+                </Typography>
                 <FormControl
                   size='small'
                   disabled={!reportType}
@@ -191,9 +194,11 @@ export const HeatmapMui = (props: any): JSX.Element => {
                 null
               ) : (
                 <div>
-                  <div style={{marginBottom: '5px', fontSize: '18px', whiteSpace: 'nowrap'}}>
+                  <Typography
+                    sx={{marginBottom: '5px'}}
+                  >
                     Samples: {samples}
-                  </div>
+                  </Typography>
                   <Slider
                     value={samples}
                     min={SAMPLES_MIN}
@@ -202,9 +207,11 @@ export const HeatmapMui = (props: any): JSX.Element => {
                     valueLabelDisplay='auto'
                     onChange={changeSamples}
                   />
-                  <div style={{marginTop: '10px', fontSize: '18px', whiteSpace: 'nowrap'}}>
+                  <Typography
+                    sx={{marginTop: '10px'}}
+                  >
                     Sample Rate: {sampleRate}
-                  </div>
+                  </Typography>
                 </div>
               )}
             </Stack>

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+import Typography from '@mui/material/Typography';
+
 import Plot from 'react-plotly.js';
 
 import { requestAPI } from './handler';
@@ -23,6 +25,7 @@ const RENDER_INTERVAL = 1000 / RENDER_FPS;
 
 let run = false;
 let reportType = '';
+let fontColor ='';
 
 let eventSource: EventSource|undefined = undefined;
 let eventData: any = undefined;
@@ -190,6 +193,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
 
   const plot_bgcolor = 'rgba(0.75, 0.75, 0.75, 0.1)';
   const paper_bgcolor = 'rgba(0, 0, 0, 0)';
+  const axis_linecolor = 'rgba(128, 128, 128, 0.5)';
 
   let heatZ: number[][]|undefined;
   let heatZMin: number;
@@ -459,6 +463,31 @@ const HeatmapPlot = (props: any): JSX.Element => {
       return;
     }
 
+    setHeatLayout(
+      {
+        width: heatWidth,
+        height: heatHeight,
+        margin: {
+          l: heatLMargin,
+          r: heatRMargin,
+          t: heatTMargin,
+          b: heatBMargin
+        },
+        font: {
+          color: fontColor
+        },
+        paper_bgcolor,
+        xaxis: {
+          ticks: '',
+          showticklabels: false
+        },
+        yaxis: {
+          ticks: '',
+          showticklabels: false
+        }
+      }
+    );
+
     setHeatData(
       [{
         z: heatZ,
@@ -485,6 +514,9 @@ const HeatmapPlot = (props: any): JSX.Element => {
           t: barXTMargin,
           b: barXBMargin
         },
+        font: {
+          color: fontColor
+        },
         plot_bgcolor,
         paper_bgcolor,
         xaxis: {
@@ -495,7 +527,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
           tickformat: '>-d',
           tickmode: 'array',
           tickvals: [],
-          linecolor: '#A9A9A9'
+          linecolor: axis_linecolor
         },
         yaxis: {
           mirror: true,
@@ -506,8 +538,8 @@ const HeatmapPlot = (props: any): JSX.Element => {
           tickmode: 'array',
           tickvals: [barXMin, barXMax],
           range: [barXMin, barXMax],
-          linecolor: '#A9A9A9',
-          zerolinecolor: '#A9A9A9'
+          linecolor: axis_linecolor,
+          zerolinecolor: axis_linecolor
         }
       }
     );
@@ -530,6 +562,9 @@ const HeatmapPlot = (props: any): JSX.Element => {
           t: barYTMargin,
           b: barYBMargin
         },
+        font: {
+          color: fontColor
+        },
         plot_bgcolor,
         paper_bgcolor,
         xaxis: {
@@ -542,8 +577,8 @@ const HeatmapPlot = (props: any): JSX.Element => {
           tickmode: 'array',
           tickvals: [barYMin, barYMax],
           range: [barYMin, barYMax],
-          linecolor: '#A9A9A9',
-          zerolinecolor: '#A9A9A9'
+          linecolor: axis_linecolor,
+          zerolinecolor: axis_linecolor
         },
         yaxis: {
           mirror: true,
@@ -553,7 +588,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
           tickformat: '>-d',
           tickmode: 'array',
           tickvals: [],
-          linecolor: '#A9A9A9'
+          linecolor: axis_linecolor
         }
       }
     );
@@ -605,27 +640,6 @@ const HeatmapPlot = (props: any): JSX.Element => {
     }
     setShowMessage(false);
     setHeatConfig(plotConfig);
-    setHeatLayout(
-      {
-        width: heatWidth,
-        height: heatHeight,
-        margin: {
-          l: heatLMargin,
-          r: heatRMargin,
-          t: heatTMargin,
-          b: heatBMargin
-        },
-        paper_bgcolor,
-        xaxis: {
-          ticks: '',
-          showticklabels: false
-        },
-        yaxis: {
-          ticks: '',
-          showticklabels: false
-        }
-      }
-    );
     setBarXConfig(plotConfig);
     setBarYConfig(plotConfig);
     try {
@@ -647,6 +661,10 @@ const HeatmapPlot = (props: any): JSX.Element => {
   useEffect(() => {
     return () => {removeEvent();}
   }, []);
+
+  useEffect(() => {
+    fontColor = props.fontColor;
+  }, [props.fontColor]);
 
   useEffect(() => {
     newPlot();
@@ -673,9 +691,12 @@ const HeatmapPlot = (props: any): JSX.Element => {
     <div style={{height: (50 + plotHeight) + 'px', display: 'flex', alignItems: 'center'}}>
       {showPlot ? (
         <div>
-          <div style={{width: (plotWidth) + 'px', height: '50px', fontSize: '20px', textAlign: 'center'}}>
+          <Typography
+            variant='h5'
+            sx={{width: plotWidth + 'px', height: '50px', textAlign: 'center'}}
+          >
             {reportType}
-          </div>
+          </Typography>
           <div style={{display: 'flex', flexWrap: 'nowrap'}}>
             <Plot
               data={barYData}
@@ -705,9 +726,11 @@ const HeatmapPlot = (props: any): JSX.Element => {
         </div>
       ) : (
         showMessage ? (
-          <div style={{width: (plotWidth) + 'px', fontSize: '18px', textAlign: 'center', whiteSpace: 'nowrap'}}>
+          <Typography
+            sx={{width: plotWidth + 'px', textAlign: 'center'}}
+          >
             Please select report type
-          </div>
+          </Typography>
         ) : (
           null
         )

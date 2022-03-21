@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 
 import CircularProgress from '@mui/material/CircularProgress';
 
+import { WebDSService } from '@webds/service';
+
 import { HeatmapMui } from './widget_mui';
 
 import { requestAPI } from './handler';
@@ -25,10 +27,13 @@ const HeatmapContainer = (props: any): JSX.Element => {
     getDeviceInfo();
   }, []);
 
+  const webdsTheme = props.service.ui.getWebDSTheme();
+  const jpFontColor = props.service.ui.getJupyterFontColor();
+
   return (
-    <div>
+    <div className='jp-webds-widget-body'>
       {dimensions.length ? (
-        <HeatmapMui numCols={dimensions[0]} numRows={dimensions[1]}/>
+        <HeatmapMui numCols={dimensions[0]} numRows={dimensions[1]} theme={webdsTheme} fontColor={jpFontColor}/>
       ) : (
         <div style={{marginLeft: 200, marginTop: 200}}>
           <CircularProgress color='primary'/>
@@ -39,10 +44,17 @@ const HeatmapContainer = (props: any): JSX.Element => {
 };
 
 export class HeatmapWidget extends ReactWidget {
+  service: WebDSService|null = null;
+
+  constructor(service: WebDSService) {
+    super();
+    this.service = service;
+  }
+
   render(): JSX.Element {
     return (
-      <div className='jp-webdsHeatmap-container'>
-        <HeatmapContainer/>
+      <div className='jp-webds-widget'>
+        <HeatmapContainer service={this.service}/>
       </div>
     );
   }
