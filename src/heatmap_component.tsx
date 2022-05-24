@@ -61,12 +61,6 @@ const updateSubBuffer = () => {
   }
 };
 
-const errorHandler = (error: any) => {
-  eventError = true;
-  removeEvent();
-  console.error(`Error on GET /webds/report\n${error}`);
-};
-
 const eventHandler = (event: any) => {
   const data = JSON.parse(event.data);
   if (!data || !data.report) {
@@ -116,11 +110,17 @@ const eventHandler = (event: any) => {
 };
 
 const removeEvent = () => {
-  if (eventSource && eventSource.readyState != SSE_CLOSED) {
+  if (eventSource && eventSource.readyState !== SSE_CLOSED) {
     eventSource.removeEventListener("report", eventHandler, false);
     eventSource.close();
     eventSource = undefined;
   }
+};
+
+const errorHandler = (error: any) => {
+  eventError = true;
+  removeEvent();
+  console.error(`Error on GET /webds/report\n${error}`);
 };
 
 const addEvent = () => {
@@ -727,13 +727,14 @@ const HeatmapPlot = (props: any): JSX.Element => {
   }, [props.run]);
 
   useEffect(() => {
-    props.updatePaperWidth(plotWidth);
+    props.updatePlotWidth(plotWidth);
   }, []);
 
   return (
     <div
       style={{
-        height: 50 + plotHeight + "px",
+        width: plotWidth + "px",
+        height: 30 + plotHeight + "px",
         display: "flex",
         alignItems: "center"
       }}
@@ -743,8 +744,8 @@ const HeatmapPlot = (props: any): JSX.Element => {
           <Typography
             variant="h5"
             sx={{
-              width: plotWidth + "px",
-              height: "50px",
+              width: "100%",
+              height: "30px",
               textAlign: "center"
             }}
           >
@@ -778,7 +779,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
           />
         </div>
       ) : showMessage ? (
-        <Typography sx={{ width: plotWidth + "px", textAlign: "center" }}>
+        <Typography sx={{ width: "100%", textAlign: "center" }}>
           Please select report type
         </Typography>
       ) : null}

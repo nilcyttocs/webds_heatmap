@@ -30,9 +30,7 @@ export const HeatmapMui = (props: any): JSX.Element => {
   const [statistics, setStatistics] = useState<string>("Single");
   const [samples, setSamples] = useState<number>(200);
   const [sampleRate, setSampleRate] = useState<number>(0);
-  const [paperWidth, setPaperWidth] = useState<number>(0);
-  const [inputSpacing, setInputSpacing] = useState<number>(0);
-  const [spareSpacing, setSpareSpacing] = useState<number>(0);
+  const [plotWidth, setPlotWidth] = useState<number>(0);
 
   const resetReportType = () => {
     setReportType("");
@@ -68,29 +66,8 @@ export const HeatmapMui = (props: any): JSX.Element => {
     setSampleRate(rate);
   };
 
-  const updatePaperWidth = (width: number) => {
-    let reportTypeWidth = 0;
-    let statisticsWidth = 0;
-    let text = document.getElementById("reportTypeText");
-    if (text) {
-      reportTypeWidth = text.clientWidth;
-    }
-    text = document.getElementById("statisticsText");
-    if (text) {
-      statisticsWidth = text.clientWidth;
-    }
-    const spacing =
-      width -
-      (reportTypeWidth +
-        8 +
-        SELECT_WIDTH +
-        statisticsWidth +
-        8 +
-        SELECT_WIDTH +
-        40);
-    setPaperWidth(width);
-    setInputSpacing(Math.floor(spacing / (2 * 8)));
-    setSpareSpacing(spacing % (2 * 8));
+  const updatePlotWidth = (width: number) => {
+    setPlotWidth(width);
   };
 
   return (
@@ -101,7 +78,7 @@ export const HeatmapMui = (props: any): JSX.Element => {
           divider={
             <Divider
               orientation="horizontal"
-              sx={{ width: paperWidth + "px" }}
+              sx={{ width: plotWidth + "px" }}
             />
           }
         >
@@ -115,12 +92,15 @@ export const HeatmapMui = (props: any): JSX.Element => {
             samples={samples}
             resetReportType={resetReportType}
             updateSampleRate={updateSampleRate}
-            updatePaperWidth={updatePaperWidth}
+            updatePlotWidth={updatePlotWidth}
           />
-          <Stack
-            spacing={inputSpacing}
-            direction="row"
-            sx={{ width: paperWidth + "px", height: "70px" }}
+
+          <div
+            style={{
+              width: plotWidth + "px",
+              display: "flex",
+              justifyContent: "space-between"
+            }}
           >
             <Stack spacing={1} direction="row">
               <Typography id="reportTypeText" sx={{ paddingTop: "10px" }}>
@@ -197,28 +177,26 @@ export const HeatmapMui = (props: any): JSX.Element => {
                 </div>
               )}
             </Stack>
-            <div style={{ paddingLeft: spareSpacing + "px" }}>
-              {run === false ? (
-                <Fab
-                  disabled={!reportType}
-                  onClick={() => {
-                    setRun(true);
-                  }}
-                >
-                  <PlayArrowIcon />
-                </Fab>
-              ) : (
-                <Fab
-                  disabled={!reportType}
-                  onClick={() => {
-                    setRun(false);
-                  }}
-                >
-                  <StopIcon />
-                </Fab>
-              )}
-            </div>
-          </Stack>
+            {run === false ? (
+              <Fab
+                disabled={!reportType}
+                onClick={() => {
+                  setRun(true);
+                }}
+              >
+                <PlayArrowIcon />
+              </Fab>
+            ) : (
+              <Fab
+                disabled={!reportType}
+                onClick={() => {
+                  setRun(false);
+                }}
+              >
+                <StopIcon />
+              </Fab>
+            )}
+          </div>
         </Stack>
       </div>
     </>
