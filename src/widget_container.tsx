@@ -24,13 +24,19 @@ const HeatmapContainer = (props: any): JSX.Element => {
   const [dimensions, setDimensions] = useState<any>([]);
 
   const initialize = async () => {
+    const dataToSend: any = {
+      command: "getAppInfo"
+    };
     try {
-      const data = await requestAPI<any>("command?query=app-info");
-      if (data.numCols && data.numRows) {
-        setDimensions([data.numCols, data.numRows]);
+      const response = await requestAPI<any>("command", {
+        body: JSON.stringify(dataToSend),
+        method: "POST"
+      });
+      if (response.numCols && response.numRows) {
+        setDimensions([response.numCols, response.numRows]);
       }
     } catch (error) {
-      console.error(`Error - GET /webds/command?query=app-info\n${error}`);
+      console.error(`Error - POST /webds/command\n${dataToSend}\n${error}`);
       alertMessage = alertMessageAppInfo;
       setAlert(true);
       return;
