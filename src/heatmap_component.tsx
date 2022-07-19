@@ -13,15 +13,32 @@ const REPORT_DELTA = 18;
 const REPORT_RAW = 19;
 const REPORT_BASELINE = 20;
 
-const HEAT_PLOT_HEIGHT = 300;
-const BARX_PLOT_HEIGHT = 60;
-const BARY_PLOT_HEIGHT = HEAT_PLOT_HEIGHT;
-const BARY_PLOT_WIDTH = BARX_PLOT_HEIGHT;
-
 const REPORT_FPS = 120;
-
 const RENDER_FPS = 30;
 const RENDER_INTERVAL = 1000 / RENDER_FPS;
+
+const HEAT_PLOT_WIDTH = 550;
+const BAR_PLOT_HEIGHT = 60;
+
+const barYLMargin = 40;
+const barYRMargin = 40;
+const barYTMargin = 20;
+const barYBMargin = 30;
+
+const heatLMargin = 0;
+const heatRMargin = 110;
+const heatTMargin = barYTMargin;
+const heatBMargin = barYBMargin;
+
+const barXLMargin = BAR_PLOT_HEIGHT + barYLMargin + barYRMargin + heatLMargin;
+const barXRMargin = 110;
+const barXTMargin = 10;
+const barXBMargin = 10;
+
+const plotConfig = { displayModeBar: false };
+const plotBgColor = "rgba(0.75, 0.75, 0.75, 0.1)";
+const paperBgColor = "rgba(0, 0, 0, 0)";
+const axisLineColor = "rgba(128, 128, 128, 0.5)";
 
 let run = false;
 let reportType = "";
@@ -170,41 +187,22 @@ const HeatmapPlot = (props: any): JSX.Element => {
   const [barYLayout, setBarYLayout] = useState<any>({});
   const [barYFrames, setBarYFrames] = useState<any>([]);
 
-  const barYLMargin = 40;
-  const barYRMargin = 40;
-  const barYTMargin = 20;
-  const barYBMargin = 30;
-  const barYHeight = BARY_PLOT_HEIGHT + barYTMargin + barYBMargin;
-  const barYWidth = BARY_PLOT_WIDTH + barYLMargin + barYRMargin;
+  const heatPlotWidth = HEAT_PLOT_WIDTH;
+  const heatPlotHeight = Math.floor(
+    (HEAT_PLOT_WIDTH * props.numRows) / props.numCols
+  );
 
-  const heatLMargin = 0;
-  const heatRMargin = 110;
-  const heatTMargin = barYTMargin;
-  const heatBMargin = barYBMargin;
-  const heatHeight = HEAT_PLOT_HEIGHT + heatTMargin + heatBMargin;
-  const heatWidth =
-    Math.floor((HEAT_PLOT_HEIGHT * props.numCols) / props.numRows) +
-    heatLMargin +
-    heatRMargin;
+  const barYHeight = heatPlotHeight + barYTMargin + barYBMargin;
+  const barYWidth = BAR_PLOT_HEIGHT + barYLMargin + barYRMargin;
 
-  const barXLMargin = barYWidth + heatLMargin;
-  const barXRMargin = 110;
-  const barXTMargin = 10;
-  const barXBMargin = 10;
-  const barXHeight = BARX_PLOT_HEIGHT + barXTMargin + barXBMargin;
-  const barXWidth =
-    Math.floor((HEAT_PLOT_HEIGHT * props.numCols) / props.numRows) +
-    barXLMargin +
-    barXRMargin;
+  const heatWidth = heatPlotWidth + heatLMargin + heatRMargin;
+  const heatHeight = heatPlotHeight + heatTMargin + heatBMargin;
+
+  const barXHeight = BAR_PLOT_HEIGHT + barXTMargin + barXBMargin;
+  const barXWidth = heatPlotWidth + barXLMargin + barXRMargin;
 
   const plotWidth = barYWidth + heatWidth;
   const plotHeight = heatHeight + barXHeight;
-
-  const plotConfig = { displayModeBar: false };
-
-  const plot_bgcolor = "rgba(0.75, 0.75, 0.75, 0.1)";
-  const paper_bgcolor = "rgba(0, 0, 0, 0)";
-  const axis_linecolor = "rgba(128, 128, 128, 0.5)";
 
   let heatZ: number[][] | undefined;
   let heatZMin: number;
@@ -511,7 +509,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
       font: {
         color: fontColor
       },
-      paper_bgcolor,
+      paper_bgcolor: paperBgColor,
       xaxis: {
         ticks: "",
         showticklabels: false
@@ -550,8 +548,8 @@ const HeatmapPlot = (props: any): JSX.Element => {
       font: {
         color: fontColor
       },
-      plot_bgcolor,
-      paper_bgcolor,
+      plot_bgcolor: plotBgColor,
+      paper_bgcolor: paperBgColor,
       xaxis: {
         mirror: true,
         showline: true,
@@ -560,7 +558,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
         tickformat: ">-d",
         tickmode: "array",
         tickvals: [],
-        linecolor: axis_linecolor
+        linecolor: axisLineColor
       },
       yaxis: {
         mirror: true,
@@ -571,8 +569,8 @@ const HeatmapPlot = (props: any): JSX.Element => {
         tickmode: "array",
         tickvals: [barXMin, barXMax],
         range: [barXMin, barXMax],
-        linecolor: axis_linecolor,
-        zerolinecolor: axis_linecolor
+        linecolor: axisLineColor,
+        zerolinecolor: axisLineColor
       }
     });
 
@@ -596,8 +594,8 @@ const HeatmapPlot = (props: any): JSX.Element => {
       font: {
         color: fontColor
       },
-      plot_bgcolor,
-      paper_bgcolor,
+      plot_bgcolor: plotBgColor,
+      paper_bgcolor: paperBgColor,
       xaxis: {
         side: "top",
         mirror: true,
@@ -608,8 +606,8 @@ const HeatmapPlot = (props: any): JSX.Element => {
         tickmode: "array",
         tickvals: [barYMin, barYMax],
         range: [barYMin, barYMax],
-        linecolor: axis_linecolor,
-        zerolinecolor: axis_linecolor
+        linecolor: axisLineColor,
+        zerolinecolor: axisLineColor
       },
       yaxis: {
         mirror: true,
@@ -619,7 +617,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
         tickformat: ">-d",
         tickmode: "array",
         tickvals: [],
-        linecolor: axis_linecolor
+        linecolor: axisLineColor
       }
     });
 
@@ -726,31 +724,17 @@ const HeatmapPlot = (props: any): JSX.Element => {
     run = props.run;
   }, [props.run]);
 
-  useEffect(() => {
-    props.updatePlotWidth(plotWidth);
-  }, []);
-
   return (
     <div
       style={{
         width: plotWidth + "px",
-        height: 30 + plotHeight + "px",
+        height: plotHeight + "px",
         display: "flex",
         alignItems: "center"
       }}
     >
       {showPlot ? (
         <div>
-          <Typography
-            variant="h5"
-            sx={{
-              width: "100%",
-              height: "30px",
-              textAlign: "center"
-            }}
-          >
-            {reportType}
-          </Typography>
           <div style={{ display: "flex", flexWrap: "nowrap" }}>
             <Plot
               data={barYData}

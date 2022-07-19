@@ -10,7 +10,7 @@ import { ThemeProvider } from "@mui/material/styles";
 
 import { WebDSService } from "@webds/service";
 
-import { HeatmapMui } from "./widget_mui";
+import { Landing } from "./widget_landing";
 
 import { requestAPI } from "./handler";
 
@@ -55,7 +55,7 @@ const HeatmapContainer = (props: any): JSX.Element => {
     <div className="jp-webds-widget-body">
       <ThemeProvider theme={webdsTheme}>
         {initialized ? (
-          <HeatmapMui
+          <Landing
             numCols={dimensions[0]}
             numRows={dimensions[1]}
             fontColor={jpFontColor}
