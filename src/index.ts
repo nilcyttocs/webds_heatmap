@@ -14,6 +14,15 @@ import { heatmapIcon } from "./icons";
 
 import { HeatmapWidget } from "./widget_container";
 
+namespace Attributes {
+  export const command = "webds_heatmap:open";
+  export const id = "webds_heatmap_widget";
+  export const label = "ADC Data";
+  export const caption = "ADC Data";
+  export const category = "Touch - Assessment";
+  export const rank = 30;
+}
+
 /**
  * Initialization data for the @webds/heatmap extension.
  */
@@ -31,10 +40,10 @@ const plugin: JupyterFrontEndPlugin<void> = {
 
     let widget: WebDSWidget;
     const { commands, shell } = app;
-    const command: string = "webds_heatmap:open";
+    const command = Attributes.command;
     commands.addCommand(command, {
-      label: "ADC Data",
-      caption: "ADC Data",
+      label: Attributes.label,
+      caption: Attributes.caption,
       icon: (args: { [x: string]: any }) => {
         return args["isLauncher"] ? heatmapIcon : undefined;
       },
@@ -42,8 +51,8 @@ const plugin: JupyterFrontEndPlugin<void> = {
         if (!widget || widget.isDisposed) {
           const content = new HeatmapWidget(service);
           widget = new WebDSWidget<HeatmapWidget>({ content });
-          widget.id = "webds_heatmap_widget";
-          widget.title.label = "ADC Data";
+          widget.id = Attributes.id;
+          widget.title.label = Attributes.label;
           widget.title.icon = heatmapIcon;
           widget.title.closable = true;
         }
@@ -59,13 +68,14 @@ const plugin: JupyterFrontEndPlugin<void> = {
     launcher.add({
       command,
       args: { isLauncher: true },
-      category: "WebDS - Exploration"
+      category: Attributes.category,
+      rank: Attributes.rank
     });
 
     let tracker = new WidgetTracker<WebDSWidget>({
-      namespace: "webds_heatmap"
+      namespace: Attributes.id
     });
-    restorer.restore(tracker, { command, name: () => "webds_heatmap" });
+    restorer.restore(tracker, { command, name: () => Attributes.id });
   }
 };
 
