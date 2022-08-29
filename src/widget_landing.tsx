@@ -93,7 +93,7 @@ export const Landing = (props: any): JSX.Element => {
               transform: "translate(-50%, -50%)"
             }}
           >
-            {reportType}
+            {reportType === "" ? "ADC Data" : reportType}
           </Typography>
           {showHelp && (
             <Button
