@@ -52,39 +52,40 @@ const HeatmapContainer = (props: any): JSX.Element => {
   const jpFontColor = props.service.ui.getJupyterFontColor();
 
   return (
-    <div className="jp-webds-widget-body">
+    <>
       <ThemeProvider theme={webdsTheme}>
-        {initialized ? (
-          <Landing
-            numCols={dimensions[0]}
-            numRows={dimensions[1]}
-            fontColor={jpFontColor}
-          />
-        ) : (
-          <>
-            <div
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: "50%",
-                transform: "translate(-50%, -50%)"
-              }}
+        <div className="jp-webds-widget-body">
+          {alert && (
+            <Alert
+              severity="error"
+              onClose={() => setAlert(false)}
+              sx={{ whiteSpace: "pre-wrap" }}
             >
-              <CircularProgress color="primary" />
-            </div>
-            {alert ? (
-              <Alert
-                severity="error"
-                onClose={() => setAlert(false)}
-                sx={{ whiteSpace: "pre-wrap" }}
-              >
-                {alertMessage}
-              </Alert>
-            ) : null}
-          </>
+              {alertMessage}
+            </Alert>
+          )}
+          {initialized && (
+            <Landing
+              numCols={dimensions[0]}
+              numRows={dimensions[1]}
+              fontColor={jpFontColor}
+            />
+          )}
+        </div>
+        {!initialized && (
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)"
+            }}
+          >
+            <CircularProgress color="primary" />
+          </div>
         )}
       </ThemeProvider>
-    </div>
+    </>
   );
 };
 
