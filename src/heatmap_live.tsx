@@ -4,6 +4,8 @@ import Typography from "@mui/material/Typography";
 
 import Plot from "react-plotly.js";
 
+import { RecordedData, Report } from "./widget_container";
+
 import { requestAPI } from "./handler";
 
 const SSE_CLOSED = 2;
@@ -35,29 +37,54 @@ const barXRMargin = 110;
 const barXTMargin = 10;
 const barXBMargin = 10;
 
+const heatPlotWidth = HEAT_PLOT_WIDTH;
+let heatPlotHeight: number;
+let heatWidth: number;
+let heatHeight: number;
+let barYWidth: number;
+let barYHeight: number;
+let barXWidth: number;
+let barXHeight: number;
+let plotWidth: number;
+let plotHeight: number;
+
+let heatZ: number[][] | undefined;
+let heatZMin: number;
+let heatZMax: number;
+let barX: number[] | undefined;
+let barXMin: number | undefined;
+let barXMax: number | undefined;
+let barY: number[] | undefined;
+let barYMin: number | undefined;
+let barYMax: number | undefined;
+
+let numRows = 0;
+let numCols = 0;
+
+let t0: number;
+let t1: number;
+let tThen: number;
+let frameCount: number;
+
 const plotConfig = { displayModeBar: false };
 const plotBgColor = "rgba(0.75, 0.75, 0.75, 0.1)";
 const paperBgColor = "rgba(0, 0, 0, 0)";
 const axisLineColor = "rgba(128, 128, 128, 0.5)";
 
+let fontColor = "";
 let run = false;
 let reportType = "";
-let fontColor = "";
+let requestID: number | undefined;
 
 let eventSource: EventSource | undefined = undefined;
 let eventData: any = undefined;
 let eventError = false;
+let eventCount: number;
 
 let statistics: string;
 let samples: number;
 let index: number;
 let filled: boolean;
-
-type Report = {
-  image: number[][];
-  hybridx: number[];
-  hybridy: number[];
-};
 
 const bufferSize = 1000;
 let buffer: Report[];
@@ -66,7 +93,24 @@ let subBuffer: Report[] | undefined;
 let t00: number;
 let t11: number;
 let fps: number;
-let eventCount: number;
+
+let record = false;
+let saving = false;
+const recordedData: RecordedData = { data: [] };
+
+const saveRecordedData = () => {
+  saving = true;
+  let blob = new Blob([JSON.stringify(recordedData)], {
+    type: "application/json"
+  });
+  recordedData.data = [];
+  saving = false;
+  let link = document.createElement("a");
+  link.href = window.URL.createObjectURL(blob);
+  let output = "adc_data.json";
+  link.download = output;
+  link.click();
+};
 
 const updateSubBuffer = () => {
   const end = index;
@@ -95,6 +139,15 @@ const eventHandler = (event: any) => {
 
   if (eventData.image === undefined || buffer === undefined) {
     return;
+  }
+
+  if (record) {
+    recordedData.data.push(eventData);
+  } else {
+    if (recordedData.data.length > 0 && !saving) {
+      saveRecordedData();
+      return;
+    }
   }
 
   eventCount++;
@@ -168,7 +221,228 @@ const setReport = async (
   return Promise.resolve();
 };
 
-const HeatmapPlot = (props: any): JSX.Element => {
+const getMean = (): Report | undefined => {
+  if (subBuffer === undefined) {
+    return undefined;
+  }
+  try {
+    const mean = subBuffer.reduce(
+      function (mean, cur) {
+        for (let i = 0; i < numRows; i++) {
+          for (let j = 0; j < numCols; j++) {
+            mean.image[i][j] += cur.image[i][j] / samples;
+          }
+        }
+        for (let i = 0; i < numCols; i++) {
+          mean.hybridx[i] += cur.hybridx[i] / samples;
+        }
+        for (let i = 0; i < numRows; i++) {
+          mean.hybridy[i] += cur.hybridy[i] / samples;
+        }
+        return mean;
+      },
+      {
+        image: [...Array(numRows)].map((e) => Array(numCols).fill(0)),
+        hybridx: [...Array(numCols)].map((e) => 0),
+        hybridy: [...Array(numRows)].map((e) => 0)
+      }
+    );
+    return mean;
+  } catch {
+    return undefined;
+  }
+};
+
+const getMax = (): Report | undefined => {
+  if (subBuffer === undefined) {
+    return undefined;
+  }
+  try {
+    const max = subBuffer.reduce(
+      function (max, cur) {
+        for (let i = 0; i < numRows; i++) {
+          for (let j = 0; j < numCols; j++) {
+            max.image[i][j] =
+              cur.image[i][j] > max.image[i][j]
+                ? cur.image[i][j]
+                : max.image[i][j];
+          }
+        }
+        for (let i = 0; i < numCols; i++) {
+          max.hybridx[i] =
+            cur.hybridx[i] > max.hybridx[i] ? cur.hybridx[i] : max.hybridx[i];
+        }
+        for (let i = 0; i < numRows; i++) {
+          max.hybridy[i] =
+            cur.hybridy[i] > max.hybridy[i] ? cur.hybridy[i] : max.hybridy[i];
+        }
+        return max;
+      },
+      {
+        image: [...Array(numRows)].map((e) => Array(numCols).fill(-Infinity)),
+        hybridx: [...Array(numCols)].map((e) => -Infinity),
+        hybridy: [...Array(numRows)].map((e) => -Infinity)
+      }
+    );
+    return max;
+  } catch {
+    return undefined;
+  }
+};
+
+const getMin = (): Report | undefined => {
+  if (subBuffer === undefined) {
+    return undefined;
+  }
+  try {
+    const min = subBuffer.reduce(
+      function (min, cur) {
+        for (let i = 0; i < numRows; i++) {
+          for (let j = 0; j < numCols; j++) {
+            min.image[i][j] =
+              cur.image[i][j] < min.image[i][j]
+                ? cur.image[i][j]
+                : min.image[i][j];
+          }
+        }
+        for (let i = 0; i < numCols; i++) {
+          min.hybridx[i] =
+            cur.hybridx[i] < min.hybridx[i] ? cur.hybridx[i] : min.hybridx[i];
+        }
+        for (let i = 0; i < numRows; i++) {
+          min.hybridy[i] =
+            cur.hybridy[i] < min.hybridy[i] ? cur.hybridy[i] : min.hybridy[i];
+        }
+        return min;
+      },
+      {
+        image: [...Array(numRows)].map((e) => Array(numCols).fill(Infinity)),
+        hybridx: [...Array(numCols)].map((e) => Infinity),
+        hybridy: [...Array(numRows)].map((e) => Infinity)
+      }
+    );
+    return min;
+  } catch {
+    return undefined;
+  }
+};
+
+const getRange = (): Report | undefined => {
+  if (subBuffer === undefined) {
+    return undefined;
+  }
+  try {
+    const max = getMax();
+    const min = getMin();
+    if (max === undefined || min === undefined) {
+      return undefined;
+    }
+    const range = {
+      image: [...Array(numRows)].map((e) => Array(numCols)),
+      hybridx: [...Array(numCols)],
+      hybridy: [...Array(numRows)]
+    };
+    range.image = max.image.map(function (rArray, rIndex) {
+      return rArray.map(function (maxElement, cIndex) {
+        return maxElement - min.image[rIndex][cIndex];
+      });
+    });
+    range.hybridx = max.hybridx.map(function (maxElement, index) {
+      return maxElement - min.hybridx[index];
+    });
+    range.hybridy = max.hybridy.map(function (maxElement, index) {
+      return maxElement - min.hybridy[index];
+    });
+    return range;
+  } catch {
+    return undefined;
+  }
+};
+
+const stopAnimation = () => {
+  if (requestID) {
+    cancelAnimationFrame(requestID);
+    requestID = undefined;
+  }
+};
+
+const computePlot = () => {
+  if (eventData === undefined) {
+    heatZ = undefined;
+    barX = undefined;
+    barY = undefined;
+    return;
+  }
+
+  let result: Report | undefined;
+  switch (statistics) {
+    case "Single":
+      result = buffer[index];
+      break;
+    case "Mean":
+      result = getMean();
+      break;
+    case "Max":
+      result = getMax();
+      break;
+    case "Min":
+      result = getMin();
+      break;
+    case "Range":
+      result = getRange();
+      break;
+    default:
+      result = undefined;
+      break;
+  }
+  if (result === undefined) {
+    heatZ = undefined;
+    barX = undefined;
+    barY = undefined;
+    return;
+  } else {
+    heatZ = result.image;
+    barX = result.hybridx;
+    barY = result.hybridy;
+  }
+
+  const minRow = heatZ!.map((row: number[]) => {
+    return Math.min.apply(Math, row);
+  });
+  heatZMin = Math.min.apply(Math, minRow);
+  const maxRow = heatZ!.map((row: number[]) => {
+    return Math.max.apply(Math, row);
+  });
+  heatZMax = Math.max.apply(Math, maxRow);
+
+  const minBarX = Math.min.apply(Math, barX);
+  const maxBarX = Math.max.apply(Math, barX);
+  if (barXMin === undefined) {
+    barXMin = minBarX;
+  } else {
+    barXMin = minBarX < barXMin ? minBarX : barXMin;
+  }
+  if (barXMax === undefined) {
+    barXMax = maxBarX;
+  } else {
+    barXMax = maxBarX > barXMax ? maxBarX : barXMax;
+  }
+
+  const minBarY = Math.min.apply(Math, barY);
+  const maxBarY = Math.max.apply(Math, barY);
+  if (barYMin === undefined) {
+    barYMin = minBarY;
+  } else {
+    barYMin = minBarY < barYMin ? minBarY : barYMin;
+  }
+  if (barYMax === undefined) {
+    barYMax = maxBarY;
+  } else {
+    barYMax = maxBarY > barYMax ? maxBarY : barYMax;
+  }
+};
+
+const HeatmapLive = (props: any): JSX.Element => {
   const [showPlot, setShowPlot] = useState<boolean>(false);
   const [showMessage, setShowMessage] = useState<boolean>(false);
 
@@ -186,41 +460,6 @@ const HeatmapPlot = (props: any): JSX.Element => {
   const [barYConfig, setBarYConfig] = useState<any>({});
   const [barYLayout, setBarYLayout] = useState<any>({});
   const [barYFrames, setBarYFrames] = useState<any>([]);
-
-  const heatPlotWidth = HEAT_PLOT_WIDTH;
-  const heatPlotHeight = Math.floor(
-    (HEAT_PLOT_WIDTH * props.numRows) / props.numCols
-  );
-
-  const barYHeight = heatPlotHeight + barYTMargin + barYBMargin;
-  const barYWidth = BAR_PLOT_HEIGHT + barYLMargin + barYRMargin;
-
-  const heatWidth = heatPlotWidth + heatLMargin + heatRMargin;
-  const heatHeight = heatPlotHeight + heatTMargin + heatBMargin;
-
-  const barXHeight = BAR_PLOT_HEIGHT + barXTMargin + barXBMargin;
-  const barXWidth = heatPlotWidth + barXLMargin + barXRMargin;
-
-  const plotWidth = barYWidth + heatWidth;
-  const plotHeight = heatHeight + barXHeight;
-
-  let heatZ: number[][] | undefined;
-  let heatZMin: number;
-  let heatZMax: number;
-
-  let barX: number[] | undefined;
-  let barXMin: number | undefined;
-  let barXMax: number | undefined;
-
-  let barY: number[] | undefined;
-  let barYMin: number | undefined;
-  let barYMax: number | undefined;
-
-  let t0: number;
-  let t1: number;
-  let tThen: number;
-  let frameCount: number;
-  let requestID: number | undefined;
 
   const storeHeatState = (figure: any) => {
     setHeatData(figure.data);
@@ -243,254 +482,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
     setBarYFrames(figure.frames);
   };
 
-  const stopAnimation = () => {
-    if (requestID) {
-      cancelAnimationFrame(requestID);
-      requestID = undefined;
-    }
-  };
-
-  const getMean = () => {
-    if (subBuffer === undefined) {
-      return undefined;
-    }
-    try {
-      const mean = subBuffer.reduce(
-        function (mean, cur) {
-          for (let i = 0; i < props.numRows; i++) {
-            for (let j = 0; j < props.numCols; j++) {
-              mean.image[i][j] += cur.image[i][j] / samples;
-            }
-          }
-          for (let i = 0; i < props.numCols; i++) {
-            mean.hybridx[i] += cur.hybridx[i] / samples;
-          }
-          for (let i = 0; i < props.numRows; i++) {
-            mean.hybridy[i] += cur.hybridy[i] / samples;
-          }
-          return mean;
-        },
-        {
-          image: [...Array(props.numRows)].map((e) =>
-            Array(props.numCols).fill(0)
-          ),
-          hybridx: [...Array(props.numCols)].map((e) => 0),
-          hybridy: [...Array(props.numRows)].map((e) => 0)
-        }
-      );
-      return mean;
-    } catch {
-      return undefined;
-    }
-  };
-
-  const getMax = () => {
-    if (subBuffer === undefined) {
-      return undefined;
-    }
-    try {
-      const max = subBuffer.reduce(
-        function (max, cur) {
-          for (let i = 0; i < props.numRows; i++) {
-            for (let j = 0; j < props.numCols; j++) {
-              max.image[i][j] =
-                cur.image[i][j] > max.image[i][j]
-                  ? cur.image[i][j]
-                  : max.image[i][j];
-            }
-          }
-          for (let i = 0; i < props.numCols; i++) {
-            max.hybridx[i] =
-              cur.hybridx[i] > max.hybridx[i] ? cur.hybridx[i] : max.hybridx[i];
-          }
-          for (let i = 0; i < props.numRows; i++) {
-            max.hybridy[i] =
-              cur.hybridy[i] > max.hybridy[i] ? cur.hybridy[i] : max.hybridy[i];
-          }
-          return max;
-        },
-        {
-          image: [...Array(props.numRows)].map((e) =>
-            Array(props.numCols).fill(-Infinity)
-          ),
-          hybridx: [...Array(props.numCols)].map((e) => -Infinity),
-          hybridy: [...Array(props.numRows)].map((e) => -Infinity)
-        }
-      );
-      return max;
-    } catch {
-      return undefined;
-    }
-  };
-
-  const getMin = () => {
-    if (subBuffer === undefined) {
-      return undefined;
-    }
-    try {
-      const min = subBuffer.reduce(
-        function (min, cur) {
-          for (let i = 0; i < props.numRows; i++) {
-            for (let j = 0; j < props.numCols; j++) {
-              min.image[i][j] =
-                cur.image[i][j] < min.image[i][j]
-                  ? cur.image[i][j]
-                  : min.image[i][j];
-            }
-          }
-          for (let i = 0; i < props.numCols; i++) {
-            min.hybridx[i] =
-              cur.hybridx[i] < min.hybridx[i] ? cur.hybridx[i] : min.hybridx[i];
-          }
-          for (let i = 0; i < props.numRows; i++) {
-            min.hybridy[i] =
-              cur.hybridy[i] < min.hybridy[i] ? cur.hybridy[i] : min.hybridy[i];
-          }
-          return min;
-        },
-        {
-          image: [...Array(props.numRows)].map((e) =>
-            Array(props.numCols).fill(Infinity)
-          ),
-          hybridx: [...Array(props.numCols)].map((e) => Infinity),
-          hybridy: [...Array(props.numRows)].map((e) => Infinity)
-        }
-      );
-      return min;
-    } catch {
-      return undefined;
-    }
-  };
-
-  const getRange = () => {
-    if (subBuffer === undefined) {
-      return undefined;
-    }
-    try {
-      const max = getMax();
-      const min = getMin();
-      if (max === undefined || min === undefined) {
-        return undefined;
-      }
-      const range = {
-        image: [...Array(props.numRows)].map((e) => Array(props.numCols)),
-        hybridx: [...Array(props.numCols)],
-        hybridy: [...Array(props.numRows)]
-      };
-      range.image = max.image.map(function (rArray, rIndex) {
-        return rArray.map(function (maxElement, cIndex) {
-          return maxElement - min.image[rIndex][cIndex];
-        });
-      });
-      range.hybridx = max.hybridx.map(function (maxElement, index) {
-        return maxElement - min.hybridx[index];
-      });
-      range.hybridy = max.hybridy.map(function (maxElement, index) {
-        return maxElement - min.hybridy[index];
-      });
-      return range;
-    } catch {
-      return undefined;
-    }
-  };
-
-  const computePlot = () => {
-    if (eventData === undefined) {
-      heatZ = undefined;
-      barX = undefined;
-      barY = undefined;
-      return;
-    }
-
-    let result: Report | undefined;
-    switch (statistics) {
-      case "Single":
-        result = buffer[index];
-        break;
-      case "Mean":
-        result = getMean();
-        break;
-      case "Max":
-        result = getMax();
-        break;
-      case "Min":
-        result = getMin();
-        break;
-      case "Range":
-        result = getRange();
-        break;
-      default:
-        result = undefined;
-        break;
-    }
-    if (result === undefined) {
-      heatZ = undefined;
-      barX = undefined;
-      barY = undefined;
-      return;
-    } else {
-      heatZ = result.image;
-      barX = result.hybridx;
-      barY = result.hybridy;
-    }
-
-    const minRow = heatZ!.map((row: number[]) => {
-      return Math.min.apply(Math, row);
-    });
-    heatZMin = Math.min.apply(Math, minRow);
-    const maxRow = heatZ!.map((row: number[]) => {
-      return Math.max.apply(Math, row);
-    });
-    heatZMax = Math.max.apply(Math, maxRow);
-
-    const minBarX = Math.min.apply(Math, barX);
-    const maxBarX = Math.max.apply(Math, barX);
-    if (barXMin === undefined) {
-      barXMin = minBarX;
-    } else {
-      barXMin = minBarX < barXMin ? minBarX : barXMin;
-    }
-    if (barXMax === undefined) {
-      barXMax = maxBarX;
-    } else {
-      barXMax = maxBarX > barXMax ? maxBarX : barXMax;
-    }
-
-    const minBarY = Math.min.apply(Math, barY);
-    const maxBarY = Math.max.apply(Math, barY);
-    if (barYMin === undefined) {
-      barYMin = minBarY;
-    } else {
-      barYMin = minBarY < barYMin ? minBarY : barYMin;
-    }
-    if (barYMax === undefined) {
-      barYMax = maxBarY;
-    } else {
-      barYMax = maxBarY > barYMax ? maxBarY : barYMax;
-    }
-  };
-
-  const animatePlot = () => {
-    if (eventError) {
-      props.resetReportType();
-      return;
-    }
-
-    requestID = requestAnimationFrame(animatePlot);
-
-    if (!run) {
-      return;
-    }
-
-    const tNow = window.performance.now();
-    const elapsed = tNow - tThen;
-
-    if (elapsed <= RENDER_INTERVAL) {
-      return;
-    }
-
-    tThen = tNow - (elapsed % RENDER_INTERVAL);
-
+  const renderPlot = () => {
     computePlot();
 
     if (heatZ === undefined || barX === undefined || barY === undefined) {
@@ -628,6 +620,33 @@ const HeatmapPlot = (props: any): JSX.Element => {
         width: 0.5
       }
     ]);
+  };
+
+  const animatePlot = () => {
+    if (eventError) {
+      props.resetReportType();
+      return;
+    }
+
+    requestID = requestAnimationFrame(animatePlot);
+
+    if (!run) {
+      return;
+    }
+
+    const tNow = window.performance.now();
+    const elapsed = tNow - tThen;
+
+    if (elapsed <= RENDER_INTERVAL) {
+      return;
+    }
+
+    tThen = tNow - (elapsed % RENDER_INTERVAL);
+
+    renderPlot();
+    if (heatZ === undefined || barX === undefined || barY === undefined) {
+      return;
+    }
 
     frameCount++;
     t1 = Date.now();
@@ -656,7 +675,7 @@ const HeatmapPlot = (props: any): JSX.Element => {
     buffer = new Array(bufferSize);
     subBuffer = undefined;
     tThen = window.performance.now();
-    animatePlot();
+    requestID = requestAnimationFrame(animatePlot);
   };
 
   const newPlot = async () => {
@@ -721,8 +740,31 @@ const HeatmapPlot = (props: any): JSX.Element => {
   }, [props.samples]);
 
   useEffect(() => {
+    record = props.record;
+  }, [props.record]);
+
+  useEffect(() => {
     run = props.run;
   }, [props.run]);
+
+  useEffect(() => {
+    numRows = props.numRows;
+    numCols = props.numCols;
+
+    heatPlotHeight = Math.floor((HEAT_PLOT_WIDTH * numRows) / numCols);
+
+    barYHeight = heatPlotHeight + barYTMargin + barYBMargin;
+    barYWidth = BAR_PLOT_HEIGHT + barYLMargin + barYRMargin;
+
+    heatWidth = heatPlotWidth + heatLMargin + heatRMargin;
+    heatHeight = heatPlotHeight + heatTMargin + heatBMargin;
+
+    barXHeight = BAR_PLOT_HEIGHT + barXTMargin + barXBMargin;
+    barXWidth = heatPlotWidth + barXLMargin + barXRMargin;
+
+    plotWidth = barYWidth + heatWidth;
+    plotHeight = heatHeight + barXHeight;
+  }, [props.numRows, props.numCols]);
 
   return (
     <div
@@ -771,4 +813,4 @@ const HeatmapPlot = (props: any): JSX.Element => {
   );
 };
 
-export default HeatmapPlot;
+export default HeatmapLive;

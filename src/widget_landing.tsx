@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import Box from "@mui/material/Box";
 import Fab from "@mui/material/Fab";
@@ -12,8 +12,13 @@ import FormControl from "@mui/material/FormControl";
 
 import StopIcon from "@mui/icons-material/Stop";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 
-import HeatmapPlot from "./heatmap_component";
+import { styled } from "@mui/material/styles";
+
+import { Page, selectFile } from "./widget_container";
+
+import HeatmapLive from "./heatmap_live";
 
 const reportTypeList = ["Delta Image", "Raw Image", "Baseline Image"];
 
@@ -23,21 +28,39 @@ const SAMPLES_MIN = 100;
 const SAMPLES_STEP = 100;
 const SAMPLES_MAX = 1000;
 
-const WIDTH = 800;
-const HEIGHT_TITLE = 70;
-const HEIGHT_CONTENT = 450;
-const HEIGHT_CONTROLS = 120;
-
 const SELECT_WIDTH = 200;
 
 const showHelp = false;
 
+const Input = styled("input")({
+  display: "none"
+});
+
 export const Landing = (props: any): JSX.Element => {
   const [run, setRun] = useState<boolean>(true);
+  const [record, setRecord] = useState<boolean>(false);
   const [reportType, setReportType] = useState<string>("Delta Image");
   const [statistics, setStatistics] = useState<string>("Single");
   const [samples, setSamples] = useState<number>(200);
   const [sampleRate, setSampleRate] = useState<number>(0);
+  const [statisticsWidth, setStatisticsWidth] = useState<number>(0);
+  const [statisticsLeftMargin, setStatisticsLeftMargin] = useState<number>(0);
+
+  const handleRecordButtonClick = () => {
+    setRecord((prev) => !prev);
+  };
+
+  const handlePlayButtonClick = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    try {
+      const data = await selectFile(event);
+      props.setRecordedData(data);
+      props.changePage(Page.Playback);
+    } catch {
+      return;
+    }
+  };
 
   const resetReportType = () => {
     setReportType("");
@@ -73,13 +96,24 @@ export const Landing = (props: any): JSX.Element => {
     setSampleRate(rate);
   };
 
+  useEffect(() => {
+    const leftMargin =
+      document.getElementById("webds_heatmap_report_type_text")!.clientWidth -
+      document.getElementById("webds_heatmap_statistics_text")!.clientWidth;
+    setStatisticsLeftMargin(leftMargin);
+    setStatisticsWidth(
+      document.getElementById("webds_heatmap_report_type")!.clientWidth -
+        leftMargin
+    );
+  }, []);
+
   return (
     <>
       <Stack spacing={2}>
         <Box
           sx={{
-            width: WIDTH + "px",
-            height: HEIGHT_TITLE + "px",
+            width: props.dimensions.width + "px",
+            height: props.dimensions.heightTitle + "px",
             position: "relative",
             bgcolor: "section.main"
           }}
@@ -113,8 +147,10 @@ export const Landing = (props: any): JSX.Element => {
         </Box>
         <Box
           sx={{
-            width: WIDTH + "px",
-            minHeight: HEIGHT_CONTENT + "px",
+            width: props.dimensions.width + "px",
+            minHeight: props.dimensions.heightContent + "px",
+            boxSizing: "border-box",
+            padding: "24px",
             position: "relative",
             bgcolor: "section.main",
             display: "flex",
@@ -123,50 +159,42 @@ export const Landing = (props: any): JSX.Element => {
             justifyContent: "center"
           }}
         >
-          <div
-            style={{
-              margin: "24px"
-            }}
-          >
-            <HeatmapPlot
-              run={run}
-              numCols={props.numCols}
-              numRows={props.numRows}
-              fontColor={props.fontColor}
-              reportType={reportType}
-              statistics={statistics}
-              samples={samples}
-              resetReportType={resetReportType}
-              updateSampleRate={updateSampleRate}
-            />
-          </div>
+          <HeatmapLive
+            run={run}
+            record={record}
+            numCols={props.numCols}
+            numRows={props.numRows}
+            fontColor={props.fontColor}
+            reportType={reportType}
+            statistics={statistics}
+            samples={samples}
+            resetReportType={resetReportType}
+            updateSampleRate={updateSampleRate}
+          />
         </Box>
         <Box
           sx={{
-            width: WIDTH + "px",
-            minHeight: HEIGHT_CONTROLS + "px",
+            width: props.dimensions.width + "px",
+            minHeight: props.dimensions.heightControls + "px",
+            boxSizing: "border-box",
+            padding: "24px",
             position: "relative",
-            bgcolor: "section.main",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center"
+            bgcolor: "section.main"
           }}
         >
-          <div
-            style={{
-              margin: "24px"
-            }}
-          >
+          <Stack spacing={3}>
             <div
               style={{
-                width: WIDTH * 0.9 + "px",
+                width: "100%",
                 display: "flex",
                 justifyContent: "space-between"
               }}
             >
-              <Stack spacing={1} direction="row">
-                <Typography id="reportTypeText" sx={{ paddingTop: "10px" }}>
+              <Stack id="webds_heatmap_report_type" spacing={1} direction="row">
+                <Typography
+                  id="webds_heatmap_report_type_text"
+                  sx={{ paddingTop: "10px" }}
+                >
                   Report Type
                 </Typography>
                 <FormControl
@@ -198,46 +226,6 @@ export const Landing = (props: any): JSX.Element => {
                   </Select>
                 </FormControl>
               </Stack>
-              <Stack spacing={5}>
-                <Stack spacing={1} direction="row">
-                  <Typography id="statisticsText" sx={{ paddingTop: "10px" }}>
-                    Statistics
-                  </Typography>
-                  <FormControl
-                    size="small"
-                    disabled={!reportType}
-                    sx={{
-                      width: SELECT_WIDTH + "px"
-                    }}
-                  >
-                    <Select value={statistics} onChange={changeStatistics}>
-                      {statisticsList.map((statistics) => (
-                        <MenuItem key={statistics} value={statistics}>
-                          {statistics}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Stack>
-                {statistics === "Single" ? null : (
-                  <div>
-                    <Typography sx={{ marginBottom: "5px" }}>
-                      Samples: {samples}
-                    </Typography>
-                    <Slider
-                      value={samples}
-                      min={SAMPLES_MIN}
-                      step={SAMPLES_STEP}
-                      max={SAMPLES_MAX}
-                      valueLabelDisplay="auto"
-                      onChange={changeSamples}
-                    />
-                    <Typography sx={{ marginTop: "10px" }}>
-                      Sample Rate: {sampleRate}
-                    </Typography>
-                  </div>
-                )}
-              </Stack>
               {run === false ? (
                 <Fab
                   disabled={!reportType}
@@ -257,8 +245,95 @@ export const Landing = (props: any): JSX.Element => {
                   <StopIcon />
                 </Fab>
               )}
+              <Stack spacing={2} direction="row">
+                <Button
+                  disabled={!reportType}
+                  endIcon={
+                    <FiberManualRecordIcon
+                      sx={{
+                        color: record ? "red" : "default"
+                      }}
+                    />
+                  }
+                  onClick={handleRecordButtonClick}
+                  sx={{ width: "120px" }}
+                >
+                  REC
+                </Button>
+                <label
+                  htmlFor="webds_heatmap_playback_file_input"
+                  style={{ display: "flex" }}
+                >
+                  <Input
+                    id="webds_heatmap_playback_file_input"
+                    type="file"
+                    accept=".json"
+                    disabled={!reportType}
+                    onChange={handlePlayButtonClick}
+                  />
+                  <Button
+                    component="span"
+                    disabled={!reportType}
+                    endIcon={<PlayArrowIcon />}
+                    sx={{ width: "120px" }}
+                  >
+                    PLAY
+                  </Button>
+                </label>
+              </Stack>
             </div>
-          </div>
+            <Stack spacing={5}>
+              <Stack spacing={1} direction="row">
+                <Typography
+                  id="webds_heatmap_statistics_text"
+                  sx={{
+                    marginLeft: statisticsLeftMargin + "px",
+                    paddingTop: "10px"
+                  }}
+                >
+                  Statistics
+                </Typography>
+                <FormControl
+                  size="small"
+                  disabled={!reportType}
+                  sx={{
+                    width: SELECT_WIDTH + "px"
+                  }}
+                >
+                  <Select value={statistics} onChange={changeStatistics}>
+                    {statisticsList.map((statistics) => (
+                      <MenuItem key={statistics} value={statistics}>
+                        {statistics}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Stack>
+              {statistics === "Single" ? null : (
+                <div
+                  style={{
+                    width: statisticsWidth + "px",
+                    marginLeft: statisticsLeftMargin + "px"
+                  }}
+                >
+                  <Typography sx={{ marginBottom: "5px" }}>
+                    Samples: {samples}
+                  </Typography>
+                  <Slider
+                    value={samples}
+                    min={SAMPLES_MIN}
+                    step={SAMPLES_STEP}
+                    max={SAMPLES_MAX}
+                    valueLabelDisplay="auto"
+                    onChange={changeSamples}
+                  />
+                  <Typography sx={{ marginTop: "10px" }}>
+                    Sample Rate: {sampleRate}
+                  </Typography>
+                </div>
+              )}
+            </Stack>
+          </Stack>
         </Box>
       </Stack>
     </>

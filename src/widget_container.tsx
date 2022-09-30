@@ -12,16 +12,107 @@ import { WebDSService } from "@webds/service";
 
 import { Landing } from "./widget_landing";
 
+import { Playback } from "./widget_playback";
+
 import { requestAPI } from "./handler";
+
+export enum Page {
+  Landing = "LANDING",
+  Playback = "PLAYBACK"
+}
+
+export type Report = {
+  image: number[][];
+  hybridx: number[];
+  hybridy: number[];
+};
+
+export type RecordedData = {
+  data: Report[];
+};
+
+export const RecordedDataContext = React.createContext({} as RecordedData);
+
+const WIDTH = 800;
+const HEIGHT_TITLE = 70;
+const HEIGHT_CONTENT = 450;
+const HEIGHT_CONTROLS = 120;
+
+const dimensions = {
+  width: WIDTH,
+  heightTitle: HEIGHT_TITLE,
+  heightContent: HEIGHT_CONTENT,
+  heightControls: HEIGHT_CONTROLS
+};
 
 let alertMessage = "";
 
 const alertMessageAppInfo = "Failed to read application info from device.";
 
+export const selectFile = async (
+  event: React.ChangeEvent<HTMLInputElement>
+): Promise<RecordedData> => {
+  if (event.target.files === null) {
+    return Promise.reject("No file selected");
+  }
+  let data: any = await event.target.files[0].text();
+  if (data.length > 0) {
+    try {
+      data = JSON.parse(data);
+      if (!data.data || data.data.length === 0) {
+        return Promise.reject("No valid JSON data content");
+      }
+    } catch (error) {
+      return Promise.reject("Invalid file content");
+    }
+  } else {
+    return Promise.reject("No file content");
+  }
+  return data;
+};
+
 const HeatmapContainer = (props: any): JSX.Element => {
   const [initialized, setInitialized] = useState<boolean>(false);
   const [alert, setAlert] = useState<boolean>(false);
-  const [dimensions, setDimensions] = useState<any>([]);
+  const [page, setPage] = useState<Page>(Page.Landing);
+  const [colsRows, setColsRows] = useState<[number, number]>([0, 0]);
+  const [recordedData, setRecordedData] = useState<RecordedData>({ data: [] });
+
+  const webdsTheme = props.service.ui.getWebDSTheme();
+  const jpFontColor = props.service.ui.getJupyterFontColor();
+
+  const changePage = (newPage: Page) => {
+    setPage(newPage);
+  };
+
+  const displayPage = (): JSX.Element | null => {
+    switch (page) {
+      case Page.Landing:
+        return (
+          <Landing
+            changePage={changePage}
+            dimensions={dimensions}
+            numCols={colsRows[0]}
+            numRows={colsRows[1]}
+            fontColor={jpFontColor}
+            setRecordedData={setRecordedData}
+          />
+        );
+      case Page.Playback:
+        return (
+          <Playback
+            changePage={changePage}
+            dimensions={dimensions}
+            numCols={colsRows[0]}
+            numRows={colsRows[1]}
+            fontColor={jpFontColor}
+            setRecordedData={setRecordedData}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   const initialize = async () => {
     const dataToSend: any = {
@@ -33,7 +124,7 @@ const HeatmapContainer = (props: any): JSX.Element => {
         method: "POST"
       });
       if (response.numCols && response.numRows) {
-        setDimensions([response.numCols, response.numRows]);
+        setColsRows([response.numCols, response.numRows]);
       }
     } catch (error) {
       console.error(`Error - POST /webds/command\n${dataToSend}\n${error}`);
@@ -47,9 +138,6 @@ const HeatmapContainer = (props: any): JSX.Element => {
   useEffect(() => {
     initialize();
   }, []);
-
-  const webdsTheme = props.service.ui.getWebDSTheme();
-  const jpFontColor = props.service.ui.getJupyterFontColor();
 
   return (
     <>
@@ -65,11 +153,9 @@ const HeatmapContainer = (props: any): JSX.Element => {
             </Alert>
           )}
           {initialized && (
-            <Landing
-              numCols={dimensions[0]}
-              numRows={dimensions[1]}
-              fontColor={jpFontColor}
-            />
+            <RecordedDataContext.Provider value={recordedData}>
+              {displayPage()}
+            </RecordedDataContext.Provider>
           )}
         </div>
         {!initialized && (
