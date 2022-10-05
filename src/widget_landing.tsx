@@ -16,6 +16,8 @@ import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 
 import { styled } from "@mui/material/styles";
 
+import { keyframes } from "@mui/system";
+
 import { Page, selectFile } from "./widget_container";
 
 import HeatmapLive from "./heatmap_live";
@@ -35,6 +37,12 @@ const showHelp = false;
 const Input = styled("input")({
   display: "none"
 });
+
+const blink = keyframes`
+  33% { color: red; }
+  66% { color: black; }
+  100% { color: red; }
+`;
 
 export const Landing = (props: any): JSX.Element => {
   const [run, setRun] = useState<boolean>(true);
@@ -251,7 +259,8 @@ export const Landing = (props: any): JSX.Element => {
                   endIcon={
                     <FiberManualRecordIcon
                       sx={{
-                        color: record ? "red" : "default"
+                        color: record ? "red" : null,
+                        animation: record ? `${blink} 1s linear infinite` : null
                       }}
                     />
                   }
@@ -268,12 +277,12 @@ export const Landing = (props: any): JSX.Element => {
                     id="webds_heatmap_playback_file_input"
                     type="file"
                     accept=".json"
-                    disabled={!reportType}
+                    disabled={record}
                     onChange={handlePlayButtonClick}
                   />
                   <Button
                     component="span"
-                    disabled={!reportType}
+                    disabled={record}
                     endIcon={<PlayArrowIcon />}
                     sx={{ width: "120px" }}
                   >
