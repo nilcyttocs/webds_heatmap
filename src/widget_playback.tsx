@@ -156,20 +156,22 @@ export const Playback = (props: any): JSX.Element => {
             <Button onClick={handleBackButtonClick} sx={{ width: "150px" }}>
               Back
             </Button>
-            <label
-              htmlFor="webds_heatmap_select_file_input"
-              style={{ display: "flex" }}
-            >
-              <Input
-                id="webds_heatmap_select_file_input"
-                type="file"
-                accept=".json"
-                onChange={handleSelectButtonClick}
-              />
-              <Button component="span" sx={{ width: "150px" }}>
-                Select
-              </Button>
-            </label>
+            {selectFile && (
+              <label
+                htmlFor="webds_heatmap_select_file_input"
+                style={{ display: "flex" }}
+              >
+                <Input
+                  id="webds_heatmap_select_file_input"
+                  type="file"
+                  accept=".json"
+                  onChange={handleSelectButtonClick}
+                />
+                <Button component="span" sx={{ width: "150px" }}>
+                  Select
+                </Button>
+              </label>
+            )}
           </Stack>
         </Box>
       </Stack>
