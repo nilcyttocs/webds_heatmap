@@ -12,7 +12,7 @@ import { WebDSService, WebDSWidget } from "@webds/service";
 
 import { heatmapIcon } from "./icons";
 
-import { HeatmapWidget } from "./widget_container";
+import HeatmapWidget from "./widget/HeatmapWidget";
 
 namespace Attributes {
   export const command = "webds_heatmap:open";

@@ -18,9 +18,9 @@ import { styled } from "@mui/material/styles";
 
 import { keyframes } from "@mui/system";
 
-import { Page, selectFile } from "./widget_container";
+import { Page, selectFile } from "./HeatmapComponent";
 
-import HeatmapLive from "./heatmap_live";
+import LivePlot from "./LivePlot";
 
 const reportTypeList = ["Delta Image", "Raw Image", "Baseline Image"];
 
@@ -167,7 +167,7 @@ export const Landing = (props: any): JSX.Element => {
             justifyContent: "center"
           }}
         >
-          <HeatmapLive
+          <LivePlot
             run={run}
             record={record}
             numCols={props.numCols}
@@ -348,3 +348,5 @@ export const Landing = (props: any): JSX.Element => {
     </>
   );
 };
+
+export default Landing;

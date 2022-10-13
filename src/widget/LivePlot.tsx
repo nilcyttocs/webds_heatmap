@@ -4,9 +4,9 @@ import Typography from "@mui/material/Typography";
 
 import Plot from "react-plotly.js";
 
-import { RecordedData, Report } from "./widget_container";
+import { RecordedData, Report } from "./HeatmapComponent";
 
-import { requestAPI } from "./handler";
+import { requestAPI } from "../handler";
 
 const SSE_CLOSED = 2;
 
@@ -442,7 +442,7 @@ const computePlot = () => {
   }
 };
 
-const HeatmapLive = (props: any): JSX.Element => {
+const LivePlot = (props: any): JSX.Element => {
   const [showPlot, setShowPlot] = useState<boolean>(false);
   const [showMessage, setShowMessage] = useState<boolean>(false);
 
@@ -813,4 +813,4 @@ const HeatmapLive = (props: any): JSX.Element => {
   );
 };
 
-export default HeatmapLive;
+export default LivePlot;
