@@ -2,11 +2,13 @@ import React, { useState, useEffect } from "react";
 
 import Typography from "@mui/material/Typography";
 
+import { TouchcommReport } from "@webds/service";
+
 import Plot from "react-plotly.js";
 
-import { RecordedData, Report } from "./HeatmapComponent";
-
 import { requestAPI } from "../handler";
+
+import { RecordedData } from "../local_exports";
 
 const SSE_CLOSED = 2;
 
@@ -87,8 +89,8 @@ let index: number;
 let filled: boolean;
 
 const bufferSize = 1000;
-let buffer: Report[];
-let subBuffer: Report[] | undefined;
+let buffer: TouchcommReport[];
+let subBuffer: TouchcommReport[] | undefined;
 
 let t00: number;
 let t11: number;
@@ -221,7 +223,7 @@ const setReport = async (
   return Promise.resolve();
 };
 
-const getMean = (): Report | undefined => {
+const getMean = (): TouchcommReport | undefined => {
   if (subBuffer === undefined) {
     return undefined;
   }
@@ -253,7 +255,7 @@ const getMean = (): Report | undefined => {
   }
 };
 
-const getMax = (): Report | undefined => {
+const getMax = (): TouchcommReport | undefined => {
   if (subBuffer === undefined) {
     return undefined;
   }
@@ -290,7 +292,7 @@ const getMax = (): Report | undefined => {
   }
 };
 
-const getMin = (): Report | undefined => {
+const getMin = (): TouchcommReport | undefined => {
   if (subBuffer === undefined) {
     return undefined;
   }
@@ -327,7 +329,7 @@ const getMin = (): Report | undefined => {
   }
 };
 
-const getRange = (): Report | undefined => {
+const getRange = (): TouchcommReport | undefined => {
   if (subBuffer === undefined) {
     return undefined;
   }
@@ -374,7 +376,7 @@ const computePlot = () => {
     return;
   }
 
-  let result: Report | undefined;
+  let result: TouchcommReport | undefined;
   switch (statistics) {
     case "Single":
       result = buffer[index];
