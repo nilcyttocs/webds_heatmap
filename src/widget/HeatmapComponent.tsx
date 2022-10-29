@@ -71,7 +71,6 @@ export const HeatmapComponent = (props: any): JSX.Element => {
   const [recordedData, setRecordedData] = useState<RecordedData>({ data: [] });
 
   const webdsTheme = props.service.ui.getWebDSTheme();
-  const jpFontColor = props.service.ui.getJupyterFontColor();
 
   const changePage = (newPage: Page) => {
     setPage(newPage);
@@ -86,7 +85,6 @@ export const HeatmapComponent = (props: any): JSX.Element => {
             dimensions={dimensions}
             numCols={colsRows[0]}
             numRows={colsRows[1]}
-            fontColor={jpFontColor}
             setRecordedData={setRecordedData}
           />
         );
@@ -97,7 +95,6 @@ export const HeatmapComponent = (props: any): JSX.Element => {
             dimensions={dimensions}
             numCols={colsRows[0]}
             numRows={colsRows[1]}
-            fontColor={jpFontColor}
             setRecordedData={setRecordedData}
           />
         );
