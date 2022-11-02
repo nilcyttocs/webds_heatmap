@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 
-import Box from "@mui/material/Box";
 import Fab from "@mui/material/Fab";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
@@ -22,6 +21,10 @@ import { Page, selectFile } from "./HeatmapComponent";
 
 import LivePlot from "./LivePlot";
 
+import { Canvas } from "./mui_extensions/Canvas";
+import { Content } from "./mui_extensions/Content";
+import { Controls } from "./mui_extensions/Controls";
+
 const reportTypeList = ["Delta Image", "Raw Image", "Baseline Image"];
 
 const statisticsList = ["Single", "Mean", "Max", "Min", "Range"];
@@ -31,8 +34,6 @@ const SAMPLES_STEP = 100;
 const SAMPLES_MAX = 1000;
 
 const SELECT_WIDTH = 200;
-
-const showHelp = false;
 
 const Input = styled("input")({
   display: "none"
@@ -116,233 +117,183 @@ export const Landing = (props: any): JSX.Element => {
   }, []);
 
   return (
-    <>
-      <Stack spacing={2}>
-        <Box
-          sx={{
-            width: props.dimensions.width + "px",
-            height: props.dimensions.heightTitle + "px",
-            position: "relative",
-            bgcolor: "section.background"
-          }}
-        >
-          <Typography
-            variant="h5"
-            sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)"
+    <Canvas title={reportType === "" ? "ADC Data" : reportType}>
+      <Content
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        <LivePlot
+          run={run}
+          record={record}
+          numCols={props.numCols}
+          numRows={props.numRows}
+          reportType={reportType}
+          statistics={statistics}
+          samples={samples}
+          resetReportType={resetReportType}
+          updateSampleRate={updateSampleRate}
+        />
+      </Content>
+      <Controls>
+        <Stack spacing={3}>
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "space-between"
             }}
           >
-            {reportType === "" ? "ADC Data" : reportType}
-          </Typography>
-          {showHelp && (
-            <Button
-              variant="text"
-              sx={{
-                position: "absolute",
-                top: "50%",
-                left: "16px",
-                transform: "translate(0%, -50%)"
-              }}
-            >
-              <Typography variant="underline">Help</Typography>
-            </Button>
-          )}
-        </Box>
-        <Box
-          sx={{
-            width: props.dimensions.width + "px",
-            minHeight: props.dimensions.heightContent + "px",
-            boxSizing: "border-box",
-            padding: "24px",
-            position: "relative",
-            bgcolor: "section.background",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center"
-          }}
-        >
-          <LivePlot
-            run={run}
-            record={record}
-            numCols={props.numCols}
-            numRows={props.numRows}
-            reportType={reportType}
-            statistics={statistics}
-            samples={samples}
-            resetReportType={resetReportType}
-            updateSampleRate={updateSampleRate}
-          />
-        </Box>
-        <Box
-          sx={{
-            width: props.dimensions.width + "px",
-            minHeight: props.dimensions.heightControls + "px",
-            boxSizing: "border-box",
-            padding: "24px",
-            position: "relative",
-            bgcolor: "section.background"
-          }}
-        >
-          <Stack spacing={3}>
-            <div
-              style={{
-                width: "100%",
-                display: "flex",
-                justifyContent: "space-between"
-              }}
-            >
-              <Stack id="webds_heatmap_report_type" spacing={1} direction="row">
-                <Typography
-                  id="webds_heatmap_report_type_text"
-                  sx={{ paddingTop: "10px" }}
-                >
-                  Report Type
-                </Typography>
-                <FormControl
-                  size="small"
-                  sx={{
-                    width: SELECT_WIDTH + "px"
+            <Stack id="webds_heatmap_report_type" spacing={1} direction="row">
+              <Typography
+                id="webds_heatmap_report_type_text"
+                sx={{ paddingTop: "10px" }}
+              >
+                Report Type
+              </Typography>
+              <FormControl
+                size="small"
+                sx={{
+                  width: SELECT_WIDTH + "px"
+                }}
+              >
+                <Select
+                  displayEmpty
+                  value={reportType}
+                  onChange={changeReportType}
+                  renderValue={(selected: any) => {
+                    if (selected.length === 0) {
+                      return (
+                        <div style={{ color: "grey" }}>
+                          <em>Please Select</em>
+                        </div>
+                      );
+                    }
+                    return selected;
                   }}
                 >
-                  <Select
-                    displayEmpty
-                    value={reportType}
-                    onChange={changeReportType}
-                    renderValue={(selected: any) => {
-                      if (selected.length === 0) {
-                        return (
-                          <div style={{ color: "grey" }}>
-                            <em>Please Select</em>
-                          </div>
-                        );
-                      }
-                      return selected;
+                  {reportTypeList.map((reportType) => (
+                    <MenuItem key={reportType} value={reportType}>
+                      {reportType}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Stack>
+            {run === false ? (
+              <Fab
+                disabled={!reportType}
+                onClick={() => {
+                  setRun(true);
+                }}
+              >
+                <PlayArrowIcon />
+              </Fab>
+            ) : (
+              <Fab
+                disabled={!reportType}
+                onClick={() => {
+                  setRun(false);
+                }}
+              >
+                <StopIcon />
+              </Fab>
+            )}
+            <Stack spacing={2} direction="row">
+              <Button
+                disabled={!reportType}
+                endIcon={
+                  <FiberManualRecordIcon
+                    sx={{
+                      color: record ? "red" : null,
+                      animation: record ? `${blink} 1s linear infinite` : null
                     }}
-                  >
-                    {reportTypeList.map((reportType) => (
-                      <MenuItem key={reportType} value={reportType}>
-                        {reportType}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Stack>
-              {run === false ? (
-                <Fab
-                  disabled={!reportType}
-                  onClick={() => {
-                    setRun(true);
-                  }}
-                >
-                  <PlayArrowIcon />
-                </Fab>
-              ) : (
-                <Fab
-                  disabled={!reportType}
-                  onClick={() => {
-                    setRun(false);
-                  }}
-                >
-                  <StopIcon />
-                </Fab>
-              )}
-              <Stack spacing={2} direction="row">
+                  />
+                }
+                onClick={handleRecordButtonClick}
+                sx={{ width: "120px" }}
+              >
+                REC
+              </Button>
+              <label
+                htmlFor="webds_heatmap_playback_file_input"
+                style={{ display: "flex" }}
+              >
+                <Input
+                  id="webds_heatmap_playback_file_input"
+                  type="file"
+                  accept=".json"
+                  disabled={record}
+                  onChange={handlePlayButtonClick}
+                />
                 <Button
-                  disabled={!reportType}
-                  endIcon={
-                    <FiberManualRecordIcon
-                      sx={{
-                        color: record ? "red" : null,
-                        animation: record ? `${blink} 1s linear infinite` : null
-                      }}
-                    />
-                  }
-                  onClick={handleRecordButtonClick}
+                  component="span"
+                  disabled={record}
+                  endIcon={<PlayArrowIcon />}
                   sx={{ width: "120px" }}
                 >
-                  REC
+                  PLAY
                 </Button>
-                <label
-                  htmlFor="webds_heatmap_playback_file_input"
-                  style={{ display: "flex" }}
-                >
-                  <Input
-                    id="webds_heatmap_playback_file_input"
-                    type="file"
-                    accept=".json"
-                    disabled={record}
-                    onChange={handlePlayButtonClick}
-                  />
-                  <Button
-                    component="span"
-                    disabled={record}
-                    endIcon={<PlayArrowIcon />}
-                    sx={{ width: "120px" }}
-                  >
-                    PLAY
-                  </Button>
-                </label>
-              </Stack>
-            </div>
-            <Stack spacing={5}>
-              <Stack spacing={1} direction="row">
-                <Typography
-                  id="webds_heatmap_statistics_text"
-                  sx={{
-                    marginLeft: statisticsLeftMargin + "px",
-                    paddingTop: "10px"
-                  }}
-                >
-                  Statistics
-                </Typography>
-                <FormControl
-                  size="small"
-                  disabled={!reportType}
-                  sx={{
-                    width: SELECT_WIDTH + "px"
-                  }}
-                >
-                  <Select value={statistics} onChange={changeStatistics}>
-                    {statisticsList.map((statistics) => (
-                      <MenuItem key={statistics} value={statistics}>
-                        {statistics}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Stack>
-              {statistics === "Single" ? null : (
-                <div
-                  style={{
-                    width: statisticsWidth + "px",
-                    marginLeft: statisticsLeftMargin + "px"
-                  }}
-                >
-                  <Typography sx={{ marginBottom: "5px" }}>
-                    Samples: {samples}
-                  </Typography>
-                  <Slider
-                    value={samples}
-                    min={SAMPLES_MIN}
-                    step={SAMPLES_STEP}
-                    max={SAMPLES_MAX}
-                    valueLabelDisplay="auto"
-                    onChange={changeSamples}
-                  />
-                  <Typography sx={{ marginTop: "10px" }}>
-                    Sample Rate: {sampleRate}
-                  </Typography>
-                </div>
-              )}
+              </label>
             </Stack>
+          </div>
+          <Stack spacing={5}>
+            <Stack spacing={1} direction="row">
+              <Typography
+                id="webds_heatmap_statistics_text"
+                sx={{
+                  marginLeft: statisticsLeftMargin + "px",
+                  paddingTop: "10px"
+                }}
+              >
+                Statistics
+              </Typography>
+              <FormControl
+                size="small"
+                disabled={!reportType}
+                sx={{
+                  width: SELECT_WIDTH + "px"
+                }}
+              >
+                <Select value={statistics} onChange={changeStatistics}>
+                  {statisticsList.map((statistics) => (
+                    <MenuItem key={statistics} value={statistics}>
+                      {statistics}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Stack>
+            {statistics === "Single" ? null : (
+              <div
+                style={{
+                  width: statisticsWidth + "px",
+                  marginLeft: statisticsLeftMargin + "px"
+                }}
+              >
+                <Typography sx={{ marginBottom: "5px" }}>
+                  Samples: {samples}
+                </Typography>
+                <Slider
+                  value={samples}
+                  min={SAMPLES_MIN}
+                  step={SAMPLES_STEP}
+                  max={SAMPLES_MAX}
+                  valueLabelDisplay="auto"
+                  onChange={changeSamples}
+                />
+                <Typography sx={{ marginTop: "10px" }}>
+                  Sample Rate: {sampleRate}
+                </Typography>
+              </div>
+            )}
           </Stack>
-        </Box>
-      </Stack>
-    </>
+        </Stack>
+      </Controls>
+    </Canvas>
   );
 };
 
