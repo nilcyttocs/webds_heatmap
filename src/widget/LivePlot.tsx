@@ -1,1 +1,1 @@
-../../../webds_component_lib/plotting/adc/LivePlot.tsx
+../../../webds_component_lib/plotting/adc_live/LivePlot.tsx

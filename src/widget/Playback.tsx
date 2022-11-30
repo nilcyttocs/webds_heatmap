@@ -9,9 +9,9 @@ import FileUploadIcon from "@mui/icons-material/FileUpload";
 
 import { Page, selectFile } from "./HeatmapComponent";
 
-import PlaybackComposite from "./plotting_adc/PlaybackComposite";
-import PlaybackProgress from "./plotting_adc/PlaybackProgress";
-import PlaybackSlider from "./plotting_adc/PlaybackSlider";
+import PlaybackComposite from "./adc_playback/PlaybackComposite";
+import PlaybackProgress from "./adc_playback/PlaybackProgress";
+import PlaybackSlider from "./adc_playback/PlaybackSlider";
 
 import { Canvas } from "./mui_extensions/Canvas";
 import { Content } from "./mui_extensions/Content";
