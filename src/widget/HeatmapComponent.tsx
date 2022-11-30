@@ -19,23 +19,11 @@ export enum Page {
   Playback = "PLAYBACK"
 }
 
-export type RecordedData = {
+export type ADCData = {
   data: TouchcommReport[];
 };
 
-export const RecordedDataContext = React.createContext({} as RecordedData);
-
-const WIDTH = 800;
-const HEIGHT_TITLE = 70;
-const HEIGHT_CONTENT = 450;
-const HEIGHT_CONTROLS = 120;
-
-const dimensions = {
-  width: WIDTH,
-  heightTitle: HEIGHT_TITLE,
-  heightContent: HEIGHT_CONTENT,
-  heightControls: HEIGHT_CONTROLS
-};
+export const ADCDataContext = React.createContext({} as ADCData);
 
 let alertMessage = "";
 
@@ -43,7 +31,7 @@ const alertMessageAppInfo = "Failed to read application info from device.";
 
 export const selectFile = async (
   event: React.ChangeEvent<HTMLInputElement>
-): Promise<RecordedData> => {
+): Promise<ADCData> => {
   if (event.target.files === null) {
     return Promise.reject("No file selected");
   }
@@ -68,7 +56,7 @@ export const HeatmapComponent = (props: any): JSX.Element => {
   const [alert, setAlert] = useState<boolean>(false);
   const [page, setPage] = useState<Page>(Page.Landing);
   const [colsRows, setColsRows] = useState<[number, number]>([0, 0]);
-  const [recordedData, setRecordedData] = useState<RecordedData>({ data: [] });
+  const [adcData, setADCData] = useState<ADCData>({ data: [] });
 
   const webdsTheme = props.service.ui.getWebDSTheme();
 
@@ -82,20 +70,18 @@ export const HeatmapComponent = (props: any): JSX.Element => {
         return (
           <Landing
             changePage={changePage}
-            dimensions={dimensions}
             numCols={colsRows[0]}
             numRows={colsRows[1]}
-            setRecordedData={setRecordedData}
+            setADCData={setADCData}
           />
         );
       case Page.Playback:
         return (
           <Playback
             changePage={changePage}
-            dimensions={dimensions}
             numCols={colsRows[0]}
             numRows={colsRows[1]}
-            setRecordedData={setRecordedData}
+            setADCData={setADCData}
           />
         );
       default:
@@ -142,9 +128,9 @@ export const HeatmapComponent = (props: any): JSX.Element => {
             </Alert>
           )}
           {initialized && (
-            <RecordedDataContext.Provider value={recordedData}>
+            <ADCDataContext.Provider value={adcData}>
               {displayPage()}
-            </RecordedDataContext.Provider>
+            </ADCDataContext.Provider>
           )}
         </div>
         {!initialized && (

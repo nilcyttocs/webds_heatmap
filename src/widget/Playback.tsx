@@ -1,44 +1,40 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 
-import Fab from "@mui/material/Fab";
-import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
-
-import PauseIcon from "@mui/icons-material/Pause";
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-
-import { styled } from "@mui/material/styles";
+import IconButton from "@mui/material/IconButton";
+import PlayCircleIcon from "@mui/icons-material/PlayCircle";
+import StopCircleIcon from "@mui/icons-material/StopCircle";
+import PauseCircleIcon from "@mui/icons-material/PauseCircle";
+import FileUploadIcon from "@mui/icons-material/FileUpload";
 
 import { Page, selectFile } from "./HeatmapComponent";
 
-import PlaybackPlot, { PlaybackProgress, PlaybackSlider } from "./PlaybackPlot";
+import PlaybackComposite from "./plotting_adc/PlaybackComposite";
+import PlaybackProgress from "./plotting_adc/PlaybackProgress";
+import PlaybackSlider from "./plotting_adc/PlaybackSlider";
 
 import { Canvas } from "./mui_extensions/Canvas";
 import { Content } from "./mui_extensions/Content";
 import { Controls } from "./mui_extensions/Controls";
 
-const Input = styled("input")({
-  display: "none"
-});
+import { ADCDataContext } from "./local_exports";
 
 export const Playback = (props: any): JSX.Element => {
   const [run, setRun] = useState<boolean>(false);
-  const [sync, setSync] = useState<boolean>(false);
+  const [frameIndex, setFrameIndex] = useState<number>(0);
 
-  const doSync = () => {
-    setSync((prev) => !prev);
-  };
+  const adcData = useContext(ADCDataContext);
 
   const handleBackButtonClick = () => {
     props.changePage(Page.Landing);
   };
 
-  const handleSelectButtonClick = async (
+  const handleUploadButtonClick = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     try {
       const data = await selectFile(event);
-      props.setRecordedData(data);
+      props.setADCData(data);
     } catch {
       return;
     }
@@ -54,13 +50,15 @@ export const Playback = (props: any): JSX.Element => {
           justifyContent: "center"
         }}
       >
-        <PlaybackPlot
-          run={run}
-          setRun={setRun}
-          numCols={props.numCols}
-          numRows={props.numRows}
-          doSync={doSync}
-        />
+        {adcData.data.length > 0 ? (
+          <PlaybackComposite
+            run={run}
+            setRun={setRun}
+            frameIndex={frameIndex}
+            setFrameIndex={setFrameIndex}
+            numFrames={adcData.data.length}
+          />
+        ) : null}
       </Content>
       <Controls
         sx={{
@@ -70,57 +68,96 @@ export const Playback = (props: any): JSX.Element => {
           justifyContent: "center"
         }}
       >
-        <div style={{ width: "100%" }}>
-          <Stack spacing={3} direction="row">
-            {run === false ? (
-              <Fab
-                onClick={() => {
-                  setRun(true);
-                }}
-              >
-                <PlayArrowIcon />
-              </Fab>
-            ) : (
-              <Fab
-                onClick={() => {
-                  setRun(false);
-                }}
-              >
-                <PauseIcon />
-              </Fab>
-            )}
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: "8px"
+          }}
+        >
+          <IconButton
+            color="primary"
+            component="label"
+            sx={{
+              padding: "0px",
+              "& .MuiSvgIcon-root": {
+                fontSize: "2.5rem"
+              }
+            }}
+          >
+            <input
+              hidden
+              type="file"
+              accept=".json"
+              onChange={handleUploadButtonClick}
+            />
+            <FileUploadIcon />
+          </IconButton>
+          <div
+            style={{
+              width: "100%",
+              margin: "0px 16px",
+              display: "flex",
+              alignItems: "center"
+            }}
+          >
             {run ? (
-              <div style={{ width: "100%", paddingTop: "18px" }}>
-                <PlaybackProgress sync={sync} />
+              <div style={{ width: "100%" }}>
+                <PlaybackProgress
+                  frameIndex={frameIndex}
+                  numFrames={adcData.data.length}
+                />
               </div>
             ) : (
-              <div style={{ width: "100%", paddingTop: "5px" }}>
-                <PlaybackSlider sync={sync} />
-              </div>
+              <PlaybackSlider
+                frameIndex={frameIndex}
+                setFrameIndex={setFrameIndex}
+                numFrames={adcData.data.length}
+                sx={{ display: "flex", alignItems: "center" }}
+              />
             )}
-          </Stack>
+          </div>
+          <IconButton
+            color="primary"
+            disabled={adcData.data.length === 0}
+            onClick={() => {
+              setRun(!run);
+            }}
+            sx={{
+              padding: "0px",
+              "& .MuiSvgIcon-root": {
+                fontSize: "2.5rem"
+              }
+            }}
+          >
+            {run ? <PauseCircleIcon /> : <PlayCircleIcon />}
+          </IconButton>
+          <IconButton
+            color="primary"
+            disabled={adcData.data.length === 0}
+            onClick={() => {
+              setRun(false);
+              setTimeout(() => {
+                setFrameIndex(0);
+              }, 1);
+            }}
+            sx={{
+              padding: "0px",
+              "& .MuiSvgIcon-root": {
+                fontSize: "2.5rem"
+              }
+            }}
+          >
+            <StopCircleIcon />
+          </IconButton>
         </div>
-        <Stack spacing={2} direction="row" sx={{ marginTop: "24px" }}>
+        <div style={{ marginTop: "24px" }}>
           <Button onClick={handleBackButtonClick} sx={{ width: "150px" }}>
             Back
           </Button>
-          {selectFile && (
-            <label
-              htmlFor="webds_heatmap_select_file_input"
-              style={{ display: "flex" }}
-            >
-              <Input
-                id="webds_heatmap_select_file_input"
-                type="file"
-                accept=".json"
-                onChange={handleSelectButtonClick}
-              />
-              <Button component="span" sx={{ width: "150px" }}>
-                Select
-              </Button>
-            </label>
-          )}
-        </Stack>
+        </div>
       </Controls>
     </Canvas>
   );

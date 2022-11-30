@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 
-import Fab from "@mui/material/Fab";
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
 import Select from "@mui/material/Select";
@@ -9,8 +8,10 @@ import MenuItem from "@mui/material/MenuItem";
 import Typography from "@mui/material/Typography";
 import FormControl from "@mui/material/FormControl";
 
-import StopIcon from "@mui/icons-material/Stop";
+import IconButton from "@mui/material/IconButton";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import PlayCircleIcon from "@mui/icons-material/PlayCircle";
+import StopCircleIcon from "@mui/icons-material/StopCircle";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 
 import { styled } from "@mui/material/styles";
@@ -64,7 +65,7 @@ export const Landing = (props: any): JSX.Element => {
   ) => {
     try {
       const data = await selectFile(event);
-      props.setRecordedData(data);
+      props.setADCData(data);
       props.changePage(Page.Playback);
     } catch {
       return;
@@ -183,25 +184,21 @@ export const Landing = (props: any): JSX.Element => {
                 </Select>
               </FormControl>
             </Stack>
-            {run === false ? (
-              <Fab
-                disabled={!reportType}
-                onClick={() => {
-                  setRun(true);
-                }}
-              >
-                <PlayArrowIcon />
-              </Fab>
-            ) : (
-              <Fab
-                disabled={!reportType}
-                onClick={() => {
-                  setRun(false);
-                }}
-              >
-                <StopIcon />
-              </Fab>
-            )}
+            <IconButton
+              color="primary"
+              disabled={!reportType}
+              onClick={() => {
+                setRun(!run);
+              }}
+              sx={{
+                padding: "0px",
+                "& .MuiSvgIcon-root": {
+                  fontSize: "2.5rem"
+                }
+              }}
+            >
+              {run ? <StopCircleIcon /> : <PlayCircleIcon />}
+            </IconButton>
             <Stack spacing={2} direction="row">
               <Button
                 disabled={!reportType}
