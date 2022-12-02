@@ -26,6 +26,8 @@ import { Canvas } from "./mui_extensions/Canvas";
 import { Content } from "./mui_extensions/Content";
 import { Controls } from "./mui_extensions/Controls";
 
+import { ALERT_MESSAGE_LOAD_FILE } from "./constants";
+
 const reportTypeList = ["Delta Image", "Raw Image", "Baseline Image"];
 
 const statisticsList = ["Single", "Mean", "Max", "Min", "Range"];
@@ -67,7 +69,9 @@ export const Landing = (props: any): JSX.Element => {
       const data = await selectFile(event);
       props.setADCData(data.data);
       props.changePage(Page.Playback);
-    } catch {
+    } catch (error) {
+      console.error(error);
+      props.showAlert(ALERT_MESSAGE_LOAD_FILE);
       return;
     }
   };

@@ -17,6 +17,8 @@ import { Canvas } from "./mui_extensions/Canvas";
 import { Content } from "./mui_extensions/Content";
 import { Controls } from "./mui_extensions/Controls";
 
+import { ALERT_MESSAGE_LOAD_FILE } from "./constants";
+
 import { ADCDataContext } from "./local_exports";
 
 export const Playback = (props: any): JSX.Element => {
@@ -41,6 +43,7 @@ export const Playback = (props: any): JSX.Element => {
       }, 1);
     } catch (error) {
       console.error(error);
+      props.showAlert(ALERT_MESSAGE_LOAD_FILE);
       return;
     }
   };

@@ -12,6 +12,8 @@ import Landing from "./Landing";
 
 import Playback from "./Playback";
 
+import { ALERT_MESSAGE_APP_INFO } from "./constants";
+
 import { requestAPI } from "../handler";
 
 export enum Page {
@@ -24,8 +26,6 @@ export type ADCData = TouchcommADCReport[];
 export const ADCDataContext = React.createContext({} as ADCData);
 
 let alertMessage = "";
-
-const alertMessageAppInfo = "Failed to read application info from device.";
 
 export const selectFile = async (
   event: React.ChangeEvent<HTMLInputElement>
@@ -58,6 +58,11 @@ export const HeatmapComponent = (props: any): JSX.Element => {
 
   const webdsTheme = props.service.ui.getWebDSTheme();
 
+  const showAlert = (message: string) => {
+    alertMessage = message;
+    setAlert(true);
+  };
+
   const changePage = (newPage: Page) => {
     setPage(newPage);
   };
@@ -67,6 +72,7 @@ export const HeatmapComponent = (props: any): JSX.Element => {
       case Page.Landing:
         return (
           <Landing
+            showAlert={showAlert}
             changePage={changePage}
             numCols={colsRows[0]}
             numRows={colsRows[1]}
@@ -76,6 +82,7 @@ export const HeatmapComponent = (props: any): JSX.Element => {
       case Page.Playback:
         return (
           <Playback
+            showAlert={showAlert}
             changePage={changePage}
             numCols={colsRows[0]}
             numRows={colsRows[1]}
@@ -101,8 +108,7 @@ export const HeatmapComponent = (props: any): JSX.Element => {
       }
     } catch (error) {
       console.error(`Error - POST /webds/command\n${dataToSend}\n${error}`);
-      alertMessage = alertMessageAppInfo;
-      setAlert(true);
+      showAlert(ALERT_MESSAGE_APP_INFO);
       return;
     }
     setInitialized(true);
