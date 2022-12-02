@@ -65,7 +65,7 @@ export const Landing = (props: any): JSX.Element => {
   ) => {
     try {
       const data = await selectFile(event);
-      props.setADCData(data);
+      props.setADCData(data.data);
       props.changePage(Page.Playback);
     } catch {
       return;

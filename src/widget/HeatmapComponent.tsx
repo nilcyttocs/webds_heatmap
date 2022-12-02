@@ -19,9 +19,7 @@ export enum Page {
   Playback = "PLAYBACK"
 }
 
-export type ADCData = {
-  data: TouchcommADCReport[];
-};
+export type ADCData = TouchcommADCReport[];
 
 export const ADCDataContext = React.createContext({} as ADCData);
 
@@ -31,7 +29,7 @@ const alertMessageAppInfo = "Failed to read application info from device.";
 
 export const selectFile = async (
   event: React.ChangeEvent<HTMLInputElement>
-): Promise<ADCData> => {
+): Promise<any> => {
   if (event.target.files === null) {
     return Promise.reject("No file selected");
   }
@@ -56,7 +54,7 @@ export const HeatmapComponent = (props: any): JSX.Element => {
   const [alert, setAlert] = useState<boolean>(false);
   const [page, setPage] = useState<Page>(Page.Landing);
   const [colsRows, setColsRows] = useState<[number, number]>([0, 0]);
-  const [adcData, setADCData] = useState<ADCData>({ data: [] });
+  const [adcData, setADCData] = useState<ADCData>([]);
 
   const webdsTheme = props.service.ui.getWebDSTheme();
 

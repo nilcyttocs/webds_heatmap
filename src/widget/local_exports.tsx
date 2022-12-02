@@ -1,1 +1,1 @@
-export { ADCData, ADCDataContext } from "./HeatmapComponent";
+export { ADCDataContext } from "./HeatmapComponent";
