@@ -35,9 +35,9 @@ export const Playback = (props: any): JSX.Element => {
     try {
       const data = await selectFile(event);
       setRun(false);
+      props.setADCData(data.data);
       setTimeout(() => {
         setFrameIndex(0);
-        props.setADCData(data.data);
       }, 1);
     } catch (error) {
       console.error(error);
