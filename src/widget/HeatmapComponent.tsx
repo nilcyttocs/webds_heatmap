@@ -12,10 +12,6 @@ import Landing from "./Landing";
 
 import Playback from "./Playback";
 
-import { ALERT_MESSAGE_APP_INFO } from "./constants";
-
-import { requestAPI } from "../handler";
-
 export enum Page {
   Landing = "LANDING",
   Playback = "PLAYBACK"
@@ -53,8 +49,8 @@ export const HeatmapComponent = (props: any): JSX.Element => {
   const [initialized, setInitialized] = useState<boolean>(false);
   const [alert, setAlert] = useState<boolean>(false);
   const [page, setPage] = useState<Page>(Page.Landing);
-  const [colsRows, setColsRows] = useState<[number, number]>([0, 0]);
   const [adcData, setADCData] = useState<ADCData>([]);
+  const [dataCounter, setDataCounter] = useState<number>(0);
 
   const webdsTheme = props.service.ui.getWebDSTheme();
 
@@ -74,9 +70,8 @@ export const HeatmapComponent = (props: any): JSX.Element => {
           <Landing
             showAlert={showAlert}
             changePage={changePage}
-            numCols={colsRows[0]}
-            numRows={colsRows[1]}
             setADCData={setADCData}
+            setDataCounter={setDataCounter}
           />
         );
       case Page.Playback:
@@ -84,9 +79,9 @@ export const HeatmapComponent = (props: any): JSX.Element => {
           <Playback
             showAlert={showAlert}
             changePage={changePage}
-            numCols={colsRows[0]}
-            numRows={colsRows[1]}
             setADCData={setADCData}
+            dataCounter={dataCounter}
+            setDataCounter={setDataCounter}
           />
         );
       default:
@@ -95,22 +90,6 @@ export const HeatmapComponent = (props: any): JSX.Element => {
   };
 
   const initialize = async () => {
-    const dataToSend: any = {
-      command: "getAppInfo"
-    };
-    try {
-      const response = await requestAPI<any>("command", {
-        body: JSON.stringify(dataToSend),
-        method: "POST"
-      });
-      if (response.numCols && response.numRows) {
-        setColsRows([response.numCols, response.numRows]);
-      }
-    } catch (error) {
-      console.error(`Error - POST /webds/command\n${dataToSend}\n${error}`);
-      showAlert(ALERT_MESSAGE_APP_INFO);
-      return;
-    }
     setInitialized(true);
   };
 

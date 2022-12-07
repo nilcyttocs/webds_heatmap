@@ -9,7 +9,7 @@ import FileUploadIcon from "@mui/icons-material/FileUpload";
 
 import { Page, selectFile } from "./HeatmapComponent";
 
-import PlaybackComposite from "./adc_playback/PlaybackComposite";
+import ADCPlayback from "./adc_plots/ADCPlayback";
 import PlaybackProgress from "./playback_controls/PlaybackProgress";
 import PlaybackSlider from "./playback_controls/PlaybackSlider";
 
@@ -38,6 +38,7 @@ export const Playback = (props: any): JSX.Element => {
       const data = await selectFile(event);
       setRun(false);
       props.setADCData(data.data);
+      props.setDataCounter((prev: number) => prev + 1);
       setTimeout(() => {
         setFrameIndex(0);
       }, 1);
@@ -59,12 +60,13 @@ export const Playback = (props: any): JSX.Element => {
         }}
       >
         {adcData.length > 0 ? (
-          <PlaybackComposite
+          <ADCPlayback
             run={run}
             setRun={setRun}
             frameIndex={frameIndex}
             setFrameIndex={setFrameIndex}
             numFrames={adcData.length}
+            dataCounter={props.dataCounter}
           />
         ) : null}
       </Content>

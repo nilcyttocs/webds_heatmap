@@ -20,7 +20,7 @@ import { keyframes } from "@mui/system";
 
 import { Page, selectFile } from "./HeatmapComponent";
 
-import LivePlot from "./LivePlot";
+import ADCLive from "./adc_plots/ADCLive";
 
 import { Canvas } from "./mui_extensions/Canvas";
 import { Content } from "./mui_extensions/Content";
@@ -48,6 +48,19 @@ const blink = keyframes`
   100% { color: red; }
 `;
 
+const convertReportType = (reportType: string) => {
+  switch (reportType) {
+    case "Delta Image":
+      return 18;
+    case "Raw Image":
+      return 19;
+    case "Baseline Image":
+      return 20;
+    default:
+      return undefined;
+  }
+};
+
 export const Landing = (props: any): JSX.Element => {
   const [run, setRun] = useState<boolean>(true);
   const [record, setRecord] = useState<boolean>(false);
@@ -68,6 +81,7 @@ export const Landing = (props: any): JSX.Element => {
     try {
       const data = await selectFile(event);
       props.setADCData(data.data);
+      props.setDataCounter((prev: number) => prev + 1);
       props.changePage(Page.Playback);
     } catch (error) {
       console.error(error);
@@ -131,12 +145,10 @@ export const Landing = (props: any): JSX.Element => {
           justifyContent: "center"
         }}
       >
-        <LivePlot
+        <ADCLive
           run={run}
           record={record}
-          numCols={props.numCols}
-          numRows={props.numRows}
-          reportType={reportType}
+          reportType={convertReportType(reportType)}
           statistics={statistics}
           samples={samples}
           resetReportType={resetReportType}
