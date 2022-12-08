@@ -19,7 +19,7 @@ export enum Page {
 
 export type ADCData = TouchcommADCReport[];
 
-export const ADCDataContext = React.createContext({} as ADCData);
+export const ADCDataContext = React.createContext([] as ADCData);
 
 let alertMessage = "";
 
