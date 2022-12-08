@@ -12,6 +12,7 @@ import { Page, selectFile } from "./HeatmapComponent";
 import ADCPlayback from "./adc_plots/ADCPlayback";
 import PlaybackProgress from "./playback_controls/PlaybackProgress";
 import PlaybackSlider from "./playback_controls/PlaybackSlider";
+import PlaybackSpeed from "./playback_controls/PlaybackSpeed";
 
 import { Canvas } from "./mui_extensions/Canvas";
 import { Content } from "./mui_extensions/Content";
@@ -24,6 +25,7 @@ import { ADCDataContext } from "./local_exports";
 export const Playback = (props: any): JSX.Element => {
   const [run, setRun] = useState<boolean>(false);
   const [frameIndex, setFrameIndex] = useState<number>(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(2);
 
   const adcData = useContext(ADCDataContext);
 
@@ -63,6 +65,7 @@ export const Playback = (props: any): JSX.Element => {
           <ADCPlayback
             run={run}
             setRun={setRun}
+            speed={playbackSpeed}
             frameIndex={frameIndex}
             setFrameIndex={setFrameIndex}
             numFrames={adcData.length}
@@ -162,6 +165,12 @@ export const Playback = (props: any): JSX.Element => {
           >
             <StopCircleIcon />
           </IconButton>
+          <div style={{ marginLeft: "8px" }}>
+            <PlaybackSpeed
+              disabled={adcData.length === 0}
+              setPlaybackSpeed={setPlaybackSpeed}
+            />
+          </div>
         </div>
         <div style={{ marginTop: "24px" }}>
           <Button onClick={handleBackButtonClick} sx={{ width: "150px" }}>
