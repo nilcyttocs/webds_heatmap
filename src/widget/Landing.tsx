@@ -145,15 +145,19 @@ export const Landing = (props: any): JSX.Element => {
           justifyContent: "center"
         }}
       >
-        <ADCLive
-          run={run}
-          record={record}
-          reportType={convertReportType(reportType)}
-          statistics={statistics}
-          samples={samples}
-          resetReportType={resetReportType}
-          updateSampleRate={updateSampleRate}
-        />
+        {reportType !== "" ? (
+          <ADCLive
+            run={run}
+            record={record}
+            reportType={convertReportType(reportType)}
+            statistics={statistics}
+            samples={samples}
+            resetReportType={resetReportType}
+            updateSampleRate={updateSampleRate}
+          />
+        ) : (
+          <Typography>Please select report type</Typography>
+        )}
       </Content>
       <Controls>
         <Stack spacing={3}>
