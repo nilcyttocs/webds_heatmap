@@ -90,13 +90,6 @@ export const Landing = (props: any): JSX.Element => {
     }
   };
 
-  const resetReportType = () => {
-    setReportType("");
-    setStatistics("Single");
-    setSamples(200);
-    setRun(false);
-  };
-
   const changeReportType = (event: any) => {
     if (reportType !== event.target.value) {
       setReportType(event.target.value);
@@ -152,7 +145,6 @@ export const Landing = (props: any): JSX.Element => {
             reportType={convertReportType(reportType)}
             statistics={statistics}
             samples={samples}
-            resetReportType={resetReportType}
             updateSampleRate={updateSampleRate}
           />
         ) : (
@@ -211,6 +203,8 @@ export const Landing = (props: any): JSX.Element => {
                 setRun(!run);
               }}
               sx={{
+                width: "40px",
+                height: "40px",
                 padding: "0px",
                 "& .MuiSvgIcon-root": {
                   fontSize: "2.5rem"
