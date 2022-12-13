@@ -11,7 +11,7 @@ import FormControl from "@mui/material/FormControl";
 import IconButton from "@mui/material/IconButton";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
-import StopCircleIcon from "@mui/icons-material/StopCircle";
+import PauseCircleIcon from "@mui/icons-material/PauseCircle";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 
 import { styled } from "@mui/material/styles";
@@ -211,7 +211,7 @@ export const Landing = (props: any): JSX.Element => {
                 }
               }}
             >
-              {run ? <StopCircleIcon /> : <PlayCircleIcon />}
+              {run ? <PauseCircleIcon /> : <PlayCircleIcon />}
             </IconButton>
             <Stack spacing={2} direction="row">
               <Button
