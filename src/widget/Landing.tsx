@@ -225,7 +225,7 @@ export const Landing = (props: any): JSX.Element => {
                   />
                 }
                 onClick={handleRecordButtonClick}
-                sx={{ width: "120px" }}
+                sx={{ width: "100px" }}
               >
                 REC
               </Button>
@@ -244,7 +244,7 @@ export const Landing = (props: any): JSX.Element => {
                   component="span"
                   disabled={record}
                   endIcon={<PlayArrowIcon />}
-                  sx={{ width: "120px" }}
+                  sx={{ width: "100px" }}
                 >
                   PLAY
                 </Button>
