@@ -1,11 +1,6 @@
 import React, { useContext, useState } from "react";
 
 import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import PlayCircleIcon from "@mui/icons-material/PlayCircle";
-import StopCircleIcon from "@mui/icons-material/StopCircle";
-import PauseCircleIcon from "@mui/icons-material/PauseCircle";
-import FileUploadIcon from "@mui/icons-material/FileUpload";
 
 import { Page, selectFile } from "./HeatmapComponent";
 
@@ -17,6 +12,12 @@ import PlaybackSpeed from "./playback_controls/PlaybackSpeed";
 import { Canvas } from "./mui_extensions/Canvas";
 import { Content } from "./mui_extensions/Content";
 import { Controls } from "./mui_extensions/Controls";
+
+import {
+  PauseRunToggle,
+  StopButton,
+  UploadButton
+} from "./mui_extensions/Button";
 
 import { ALERT_MESSAGE_LOAD_FILE } from "./constants";
 
@@ -90,24 +91,16 @@ export const Playback = (props: any): JSX.Element => {
             gap: "8px"
           }}
         >
-          <IconButton
-            color="primary"
-            component="label"
-            sx={{
-              padding: "0px",
-              "& .MuiSvgIcon-root": {
-                fontSize: "2.5rem"
-              }
-            }}
-          >
-            <input
-              hidden
-              type="file"
-              accept=".json"
-              onChange={handleUploadButtonClick}
-            />
-            <FileUploadIcon />
-          </IconButton>
+          <UploadButton
+            input={
+              <input
+                hidden
+                type="file"
+                accept=".json"
+                onChange={handleUploadButtonClick}
+              />
+            }
+          />
           <div
             style={{
               width: "100%",
@@ -132,23 +125,14 @@ export const Playback = (props: any): JSX.Element => {
               />
             )}
           </div>
-          <IconButton
-            color="primary"
+          <PauseRunToggle
+            running={run}
             disabled={adcData.length === 0}
             onClick={() => {
               setRun(!run);
             }}
-            sx={{
-              padding: "0px",
-              "& .MuiSvgIcon-root": {
-                fontSize: "2.5rem"
-              }
-            }}
-          >
-            {run ? <PauseCircleIcon /> : <PlayCircleIcon />}
-          </IconButton>
-          <IconButton
-            color="primary"
+          />
+          <StopButton
             disabled={adcData.length === 0}
             onClick={() => {
               setRun(false);
@@ -156,15 +140,7 @@ export const Playback = (props: any): JSX.Element => {
                 setFrameIndex(0);
               }, 1);
             }}
-            sx={{
-              padding: "0px",
-              "& .MuiSvgIcon-root": {
-                fontSize: "2.5rem"
-              }
-            }}
-          >
-            <StopCircleIcon />
-          </IconButton>
+          />
           <div style={{ marginLeft: "8px" }}>
             <PlaybackSpeed
               disabled={adcData.length === 0}
