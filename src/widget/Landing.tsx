@@ -138,75 +138,84 @@ export const Landing = (props: any): JSX.Element => {
               gap: "16px"
             }}
           >
-            <FormControl
-              sx={{
-                width: "150px",
-                "& .MuiOutlinedInput-root": {
-                  height: "40px"
-                },
-                "& .MuiSelect-icon": { width: "0.75em", height: "0.75em" }
-              }}
-            >
-              <InputLabel sx={{ fontSize: "0.875rem" }}>Report Type</InputLabel>
-              <Select
-                displayEmpty
-                value={reportType}
-                label="Report Type"
-                onChange={changeReportType}
-                renderValue={(selected: any) => {
-                  if (selected.length === 0) {
-                    return (
-                      <div style={{ color: "grey" }}>
-                        <em>Please Select</em>
-                      </div>
-                    );
-                  }
-                  return selected;
+            <Stack spacing={3}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "16px"
                 }}
-                sx={{ fontSize: "0.875rem" }}
               >
-                {reportTypeList.map((reportType) => (
-                  <MenuItem
-                    key={reportType}
+                <FormControl
+                  sx={{
+                    width: "150px",
+                    "& .MuiOutlinedInput-root": {
+                      height: "40px"
+                    },
+                    "& .MuiSelect-icon": { width: "0.75em", height: "0.75em" }
+                  }}
+                >
+                  <InputLabel sx={{ fontSize: "0.875rem" }}>
+                    Report Type
+                  </InputLabel>
+                  <Select
+                    displayEmpty
                     value={reportType}
+                    label="Report Type"
+                    onChange={changeReportType}
+                    renderValue={(selected: any) => {
+                      if (selected.length === 0) {
+                        return (
+                          <div style={{ color: "grey" }}>
+                            <em>Please Select</em>
+                          </div>
+                        );
+                      }
+                      return selected;
+                    }}
                     sx={{ fontSize: "0.875rem" }}
                   >
-                    {reportType}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-            <Stack spacing={3}>
-              <FormControl
-                disabled={!reportType}
-                sx={{
-                  width: "100px",
-                  "& .MuiOutlinedInput-root": {
-                    height: "40px"
-                  },
-                  "& .MuiSelect-icon": { width: "0.75em", height: "0.75em" }
-                }}
-              >
-                <InputLabel sx={{ fontSize: "0.875rem" }}>
-                  Statistics
-                </InputLabel>
-                <Select
-                  value={statistics}
-                  label="Statistics"
-                  onChange={changeStatistics}
-                  sx={{ fontSize: "0.875rem" }}
+                    {reportTypeList.map((reportType) => (
+                      <MenuItem
+                        key={reportType}
+                        value={reportType}
+                        sx={{ fontSize: "0.875rem" }}
+                      >
+                        {reportType}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControl
+                  disabled={!reportType}
+                  sx={{
+                    width: "100px",
+                    "& .MuiOutlinedInput-root": {
+                      height: "40px"
+                    },
+                    "& .MuiSelect-icon": { width: "0.75em", height: "0.75em" }
+                  }}
                 >
-                  {statisticsList.map((statistics) => (
-                    <MenuItem
-                      key={statistics}
-                      value={statistics}
-                      sx={{ fontSize: "0.875rem" }}
-                    >
-                      {statistics}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+                  <InputLabel sx={{ fontSize: "0.875rem" }}>
+                    Statistics
+                  </InputLabel>
+                  <Select
+                    value={statistics}
+                    label="Statistics"
+                    onChange={changeStatistics}
+                    sx={{ fontSize: "0.875rem" }}
+                  >
+                    {statisticsList.map((statistics) => (
+                      <MenuItem
+                        key={statistics}
+                        value={statistics}
+                        sx={{ fontSize: "0.875rem" }}
+                      >
+                        {statistics}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </div>
               {statistics === "Single" ? null : (
                 <div>
                   <Typography variant="body2">Samples: {samples}</Typography>
