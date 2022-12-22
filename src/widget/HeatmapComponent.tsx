@@ -33,7 +33,13 @@ export const selectFile = async (
   if (data.length > 0) {
     try {
       data = JSON.parse(data);
-      if (!data.data || data.data.length === 0) {
+      if (
+        !data.data ||
+        data.data.length === 0 ||
+        (data.data[0][0] !== "delta" &&
+          data.data[0][0] !== "raw" &&
+          data.data[0][0] !== "baseline")
+      ) {
         return Promise.reject("No valid JSON data content");
       }
     } catch (error) {
