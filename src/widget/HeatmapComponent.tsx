@@ -12,6 +12,8 @@ import Landing from "./Landing";
 
 import Playback from "./Playback";
 
+import { webdsService } from "./local_exports";
+
 export enum Page {
   Landing = "LANDING",
   Playback = "PLAYBACK"
@@ -58,7 +60,7 @@ export const HeatmapComponent = (props: any): JSX.Element => {
   const [adcData, setADCData] = useState<ADCData>([]);
   const [dataCounter, setDataCounter] = useState<number>(0);
 
-  const webdsTheme = props.service.ui.getWebDSTheme();
+  const webdsTheme = webdsService.ui.getWebDSTheme();
 
   const showAlert = (message: string) => {
     alertMessage = message;

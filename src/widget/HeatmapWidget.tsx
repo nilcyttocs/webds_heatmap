@@ -6,6 +6,8 @@ import { WebDSService } from "@webds/service";
 
 import HeatmapComponent from "./HeatmapComponent";
 
+export let webdsService: WebDSService;
+
 export class HeatmapWidget extends ReactWidget {
   id: string;
   service: WebDSService;
@@ -17,9 +19,10 @@ export class HeatmapWidget extends ReactWidget {
   }
 
   render(): JSX.Element {
+    webdsService = this.service;
     return (
       <div id={this.id + "_component"}>
-        <HeatmapComponent service={this.service} />
+        <HeatmapComponent />
       </div>
     );
   }
