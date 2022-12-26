@@ -1,5 +1,3 @@
-export { webdsService } from "./widget/HeatmapWidget";
-
-export { ADCDataContext } from "./widget/HeatmapComponent";
+export { webdsService } from "./index";
 
 export { requestAPI } from "./handler";
