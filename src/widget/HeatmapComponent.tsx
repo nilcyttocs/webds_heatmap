@@ -1,35 +1,30 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 
-import Alert from "@mui/material/Alert";
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import { ThemeProvider } from '@mui/material/styles';
+import { TouchcommADCReport } from '@webds/service';
 
-import CircularProgress from "@mui/material/CircularProgress";
-
-import { ThemeProvider } from "@mui/material/styles";
-
-import { TouchcommADCReport } from "@webds/service";
-
-import Landing from "./Landing";
-
-import Playback from "./Playback";
-
-import { webdsService } from "./local_exports";
+import Landing from './Landing';
+import { webdsService } from './local_exports';
+import Playback from './Playback';
 
 export enum Page {
-  Landing = "LANDING",
-  Playback = "PLAYBACK"
+  Landing = 'LANDING',
+  Playback = 'PLAYBACK'
 }
 
 export type ADCData = TouchcommADCReport[];
 
 export const ADCDataContext = React.createContext([] as ADCData);
 
-let alertMessage = "";
+let alertMessage = '';
 
 export const selectFile = async (
   event: React.ChangeEvent<HTMLInputElement>
 ): Promise<any> => {
   if (event.target.files === null) {
-    return Promise.reject("No file selected");
+    return Promise.reject('No file selected');
   }
   let data: any = await event.target.files[0].text();
   if (data.length > 0) {
@@ -38,17 +33,17 @@ export const selectFile = async (
       if (
         !data.data ||
         data.data.length === 0 ||
-        (data.data[0][0] !== "delta" &&
-          data.data[0][0] !== "raw" &&
-          data.data[0][0] !== "baseline")
+        (data.data[0][0] !== 'delta' &&
+          data.data[0][0] !== 'raw' &&
+          data.data[0][0] !== 'baseline')
       ) {
-        return Promise.reject("No valid JSON data content");
+        return Promise.reject('No valid JSON data content');
       }
     } catch (error) {
-      return Promise.reject("Invalid file content");
+      return Promise.reject('Invalid file content');
     }
   } else {
-    return Promise.reject("No file content");
+    return Promise.reject('No file content');
   }
   return data;
 };
@@ -113,7 +108,7 @@ export const HeatmapComponent = (props: any): JSX.Element => {
             <Alert
               severity="error"
               onClose={() => setAlert(false)}
-              sx={{ whiteSpace: "pre-wrap" }}
+              sx={{ whiteSpace: 'pre-wrap' }}
             >
               {alertMessage}
             </Alert>
@@ -127,10 +122,10 @@ export const HeatmapComponent = (props: any): JSX.Element => {
         {!initialized && (
           <div
             style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)"
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)'
             }}
           >
             <CircularProgress color="primary" />

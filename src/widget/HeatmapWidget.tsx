@@ -1,8 +1,8 @@
-import React from "react";
+import React from 'react';
 
-import { ReactWidget } from "@jupyterlab/apputils";
+import { ReactWidget } from '@jupyterlab/apputils';
 
-import HeatmapComponent from "./HeatmapComponent";
+import HeatmapComponent from './HeatmapComponent';
 
 export class HeatmapWidget extends ReactWidget {
   id: string;
@@ -14,7 +14,7 @@ export class HeatmapWidget extends ReactWidget {
 
   render(): JSX.Element {
     return (
-      <div id={this.id + "_component"}>
+      <div id={this.id + '_component'}>
         <HeatmapComponent />
       </div>
     );

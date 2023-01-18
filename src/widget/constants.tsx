@@ -1,4 +1,4 @@
-export const ALERT_MESSAGE_LOAD_FILE = "Failed to load ADC data file.";
+export const ALERT_MESSAGE_LOAD_FILE = 'Failed to load ADC data file.';
 
 export const SAMPLES_MIN = 100;
 

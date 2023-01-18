@@ -1,46 +1,42 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
-import Stack from "@mui/material/Stack";
-import Select from "@mui/material/Select";
-import Slider from "@mui/material/Slider";
-import MenuItem from "@mui/material/MenuItem";
-import Typography from "@mui/material/Typography";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import Slider from '@mui/material/Slider';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 
-import { Page, selectFile } from "./HeatmapComponent";
-
-import ADCLive from "./adc_plots/ADCLive";
-import RenderRate from "./live_controls/RenderRate";
-
-import { Canvas } from "./mui_extensions/Canvas";
-import { Content } from "./mui_extensions/Content";
-import { Controls } from "./mui_extensions/Controls";
-
+import ADCLive from './adc_plots/ADCLive';
+import {
+  ALERT_MESSAGE_LOAD_FILE,
+  SAMPLES_MAX,
+  SAMPLES_MIN,
+  SAMPLES_STEP
+} from './constants';
+import { Page, selectFile } from './HeatmapComponent';
+import RenderRate from './live_controls/RenderRate';
 import {
   PauseRunToggle,
   RecordToggle,
   UploadButton
-} from "./mui_extensions/Button";
+} from './mui_extensions/Button';
+import { Canvas } from './mui_extensions/Canvas';
+import { Content } from './mui_extensions/Content';
+import { Controls } from './mui_extensions/Controls';
 
-import {
-  ALERT_MESSAGE_LOAD_FILE,
-  SAMPLES_MIN,
-  SAMPLES_STEP,
-  SAMPLES_MAX
-} from "./constants";
+const reportTypeList = ['Delta Image', 'Raw Image', 'Baseline Image'];
 
-const reportTypeList = ["Delta Image", "Raw Image", "Baseline Image"];
-
-const statisticsList = ["Single", "Mean", "Max", "Min", "Range"];
+const statisticsList = ['Single', 'Mean', 'Max', 'Min', 'Range'];
 
 const convertReportType = (reportType: string) => {
   switch (reportType) {
-    case "Delta Image":
+    case 'Delta Image':
       return 18;
-    case "Raw Image":
+    case 'Raw Image':
       return 19;
-    case "Baseline Image":
+    case 'Baseline Image':
       return 20;
     default:
       return undefined;
@@ -50,8 +46,8 @@ const convertReportType = (reportType: string) => {
 export const Landing = (props: any): JSX.Element => {
   const [run, setRun] = useState<boolean>(true);
   const [record, setRecord] = useState<boolean>(false);
-  const [reportType, setReportType] = useState<string>("Delta Image");
-  const [statistics, setStatistics] = useState<string>("Single");
+  const [reportType, setReportType] = useState<string>('Delta Image');
+  const [statistics, setStatistics] = useState<string>('Single');
   const [samples, setSamples] = useState<number>(200);
   const [sampleRate, setSampleRate] = useState<number>(0);
   const [renderRate, setRenderRate] = useState<number>(0);
@@ -74,7 +70,7 @@ export const Landing = (props: any): JSX.Element => {
   const changeReportType = (event: any) => {
     if (reportType !== event.target.value) {
       setReportType(event.target.value);
-      setStatistics("Single");
+      setStatistics('Single');
       setSamples(200);
       if (event.target.value) {
         setRun(true);
@@ -95,16 +91,16 @@ export const Landing = (props: any): JSX.Element => {
   };
 
   return (
-    <Canvas title={reportType === "" ? "ADC Data" : reportType}>
+    <Canvas title={reportType === '' ? 'ADC Data' : reportType}>
       <Content
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center"
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}
       >
-        {reportType !== "" ? (
+        {reportType !== '' ? (
           <ADCLive
             run={run}
             record={record}
@@ -120,41 +116,41 @@ export const Landing = (props: any): JSX.Element => {
       </Content>
       <Controls
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center"
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}
       >
         <div
           style={{
-            display: "flex",
-            gap: "80px"
+            display: 'flex',
+            gap: '80px'
           }}
         >
           <div
             style={{
-              display: "flex",
-              gap: "16px"
+              display: 'flex',
+              gap: '16px'
             }}
           >
             <Stack spacing={3}>
               <div
                 style={{
-                  display: "flex",
-                  gap: "16px"
+                  display: 'flex',
+                  gap: '16px'
                 }}
               >
                 <FormControl
                   sx={{
-                    width: "150px",
-                    "& .MuiOutlinedInput-root": {
-                      height: "40px"
+                    width: '150px',
+                    '& .MuiOutlinedInput-root': {
+                      height: '40px'
                     },
-                    "& .MuiSelect-icon": { width: "0.75em", height: "0.75em" }
+                    '& .MuiSelect-icon': { width: '0.75em', height: '0.75em' }
                   }}
                 >
-                  <InputLabel sx={{ fontSize: "0.875rem" }}>
+                  <InputLabel sx={{ fontSize: '0.875rem' }}>
                     Report Type
                   </InputLabel>
                   <Select
@@ -165,20 +161,20 @@ export const Landing = (props: any): JSX.Element => {
                     renderValue={(selected: any) => {
                       if (selected.length === 0) {
                         return (
-                          <div style={{ color: "grey" }}>
+                          <div style={{ color: 'grey' }}>
                             <em>Please Select</em>
                           </div>
                         );
                       }
                       return selected;
                     }}
-                    sx={{ fontSize: "0.875rem" }}
+                    sx={{ fontSize: '0.875rem' }}
                   >
-                    {reportTypeList.map((reportType) => (
+                    {reportTypeList.map(reportType => (
                       <MenuItem
                         key={reportType}
                         value={reportType}
-                        sx={{ fontSize: "0.875rem" }}
+                        sx={{ fontSize: '0.875rem' }}
                       >
                         {reportType}
                       </MenuItem>
@@ -188,27 +184,27 @@ export const Landing = (props: any): JSX.Element => {
                 <FormControl
                   disabled={!reportType}
                   sx={{
-                    width: "100px",
-                    "& .MuiOutlinedInput-root": {
-                      height: "40px"
+                    width: '100px',
+                    '& .MuiOutlinedInput-root': {
+                      height: '40px'
                     },
-                    "& .MuiSelect-icon": { width: "0.75em", height: "0.75em" }
+                    '& .MuiSelect-icon': { width: '0.75em', height: '0.75em' }
                   }}
                 >
-                  <InputLabel sx={{ fontSize: "0.875rem" }}>
+                  <InputLabel sx={{ fontSize: '0.875rem' }}>
                     Statistics
                   </InputLabel>
                   <Select
                     value={statistics}
                     label="Statistics"
                     onChange={changeStatistics}
-                    sx={{ fontSize: "0.875rem" }}
+                    sx={{ fontSize: '0.875rem' }}
                   >
-                    {statisticsList.map((statistics) => (
+                    {statisticsList.map(statistics => (
                       <MenuItem
                         key={statistics}
                         value={statistics}
-                        sx={{ fontSize: "0.875rem" }}
+                        sx={{ fontSize: '0.875rem' }}
                       >
                         {statistics}
                       </MenuItem>
@@ -216,7 +212,7 @@ export const Landing = (props: any): JSX.Element => {
                   </Select>
                 </FormControl>
               </div>
-              {statistics === "Single" ? null : (
+              {statistics === 'Single' ? null : (
                 <div>
                   <Typography variant="body2">Samples: {samples}</Typography>
                   <Slider
@@ -226,9 +222,9 @@ export const Landing = (props: any): JSX.Element => {
                     max={SAMPLES_MAX}
                     valueLabelDisplay="auto"
                     onChange={changeSamples}
-                    sx={{ marginTop: "8px" }}
+                    sx={{ marginTop: '8px' }}
                   />
-                  <Typography variant="body2" sx={{ marginTop: "8px" }}>
+                  <Typography variant="body2" sx={{ marginTop: '8px' }}>
                     Sample Rate: {sampleRate}
                   </Typography>
                 </div>
@@ -236,7 +232,7 @@ export const Landing = (props: any): JSX.Element => {
             </Stack>
             <RenderRate setRenderRate={setRenderRate} />
           </div>
-          <div style={{ display: "flex", gap: "16px" }}>
+          <div style={{ display: 'flex', gap: '16px' }}>
             <PauseRunToggle
               running={run}
               disabled={!reportType}
@@ -248,7 +244,7 @@ export const Landing = (props: any): JSX.Element => {
               recording={record}
               disabled={!reportType}
               onClick={() => {
-                setRecord((prev) => !prev);
+                setRecord(prev => !prev);
               }}
             />
             <UploadButton
