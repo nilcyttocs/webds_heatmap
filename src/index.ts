@@ -15,7 +15,7 @@ namespace Attributes {
   export const id = 'webds_heatmap_widget';
   export const label = 'ADC Data';
   export const caption = 'ADC Data';
-  export const category = 'Touch - Assessment';
+  export const category = 'Device - Assessment';
   export const rank = 30;
 }
 
