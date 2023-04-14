@@ -42,7 +42,7 @@ export const Playback = (props: any): JSX.Element => {
       }, 1);
     } catch (error) {
       console.error(error);
-      props.showAlert(ALERT_MESSAGE_LOAD_FILE);
+      props.setAlert(ALERT_MESSAGE_LOAD_FILE);
       return;
     }
   };

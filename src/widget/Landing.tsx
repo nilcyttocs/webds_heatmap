@@ -62,7 +62,7 @@ export const Landing = (props: any): JSX.Element => {
       props.changePage(Page.Playback);
     } catch (error) {
       console.error(error);
-      props.showAlert(ALERT_MESSAGE_LOAD_FILE);
+      props.setAlert(ALERT_MESSAGE_LOAD_FILE);
       return;
     }
   };

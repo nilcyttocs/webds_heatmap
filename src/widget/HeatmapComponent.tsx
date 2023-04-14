@@ -18,8 +18,6 @@ export type ADCData = TouchcommADCReport[];
 
 export const ADCDataContext = React.createContext([] as ADCData);
 
-let alertMessage = '';
-
 export const selectFile = async (
   event: React.ChangeEvent<HTMLInputElement>
 ): Promise<any> => {
@@ -50,17 +48,12 @@ export const selectFile = async (
 
 export const HeatmapComponent = (props: any): JSX.Element => {
   const [initialized, setInitialized] = useState<boolean>(false);
-  const [alert, setAlert] = useState<boolean>(false);
+  const [alert, setAlert] = useState<string | undefined>(undefined);
   const [page, setPage] = useState<Page>(Page.Landing);
   const [adcData, setADCData] = useState<ADCData>([]);
   const [dataCounter, setDataCounter] = useState<number>(0);
 
   const webdsTheme = webdsService.ui.getWebDSTheme();
-
-  const showAlert = (message: string) => {
-    alertMessage = message;
-    setAlert(true);
-  };
 
   const changePage = (newPage: Page) => {
     setPage(newPage);
@@ -71,7 +64,7 @@ export const HeatmapComponent = (props: any): JSX.Element => {
       case Page.Landing:
         return (
           <Landing
-            showAlert={showAlert}
+            setAlert={setAlert}
             changePage={changePage}
             setADCData={setADCData}
             setDataCounter={setDataCounter}
@@ -80,7 +73,7 @@ export const HeatmapComponent = (props: any): JSX.Element => {
       case Page.Playback:
         return (
           <Playback
-            showAlert={showAlert}
+            setAlert={setAlert}
             changePage={changePage}
             setADCData={setADCData}
             dataCounter={dataCounter}
@@ -104,13 +97,13 @@ export const HeatmapComponent = (props: any): JSX.Element => {
     <>
       <ThemeProvider theme={webdsTheme}>
         <div className="jp-webds-widget-body">
-          {alert && (
+          {alert !== undefined && (
             <Alert
               severity="error"
-              onClose={() => setAlert(false)}
+              onClose={() => setAlert(undefined)}
               sx={{ whiteSpace: 'pre-wrap' }}
             >
-              {alertMessage}
+              {alert}
             </Alert>
           )}
           {initialized && (
